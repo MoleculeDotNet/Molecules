@@ -11,8 +11,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{71B492
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{A357389B-DE9A-4D1E-BC4F-490489CD4714}"
+	ProjectSection(SolutionItems) = preProject
+		Version.xml = Version.xml
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oxygen.Hardware", "Oxygen.Hardware\Oxygen.Hardware.csproj", "{66B08BE0-EF22-47E3-899D-E58E9E952B9F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{2581CBDF-9D3C-4C43-BF4A-B3C9CEAE44F1}"
+	ProjectSection(SolutionItems) = preProject
+		nuget\Oxygen.nuspec = nuget\Oxygen.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{366340D5-DD26-4EA6-91DE-D76E91C018D1}"
+	ProjectSection(SolutionItems) = preProject
+		Scripts\SolutionPostBuild.ps1 = Scripts\SolutionPostBuild.ps1
+		Scripts\SolutionPreBuild.ps1 = Scripts\SolutionPreBuild.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

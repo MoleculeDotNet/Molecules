@@ -1,4 +1,5 @@
 using Microsoft.SPOT.Hardware;
+// ReSharper disable InconsistentNaming
 
 namespace IngenuityMicro.Molecule.Oxygen.Hardware
 {

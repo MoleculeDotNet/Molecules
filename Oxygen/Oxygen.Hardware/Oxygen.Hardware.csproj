@@ -40,4 +40,10 @@
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>powershell -NoLogo -NonInteractive -Command .'$(SolutionDir)Scripts\SolutionPreBuild.ps1' -Verbose -nuspec:'$(SolutionDir)nuget\Oxygen.nuspec' -SolutionDir:'$(SolutionDir)' -ProjectDir:'$(ProjectDir)' -TargetDir:'$(TargetDir)' -TargetFileName:'$(TargetFileName)' -ConfigurationName:'$(ConfigurationName)'</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>powershell -NoLogo -NonInteractive -Command .'$(SolutionDir)Scripts\SolutionPostBuild.ps1' -Verbose -NetMFVersion:43 -RepoDir:'$(SolutionDir)..\..\nugetrepo\' -nuspec:'$(SolutionDir)nuget\Oxygen.nuspec' -SolutionDir:'$(SolutionDir)' -ProjectDir:'$(ProjectDir)' -ProjectName:'$(ProjectName)' -TargetDir:'$(TargetDir)' -TargetFileName:'$(TargetFileName)' -ConfigurationName:'$(ConfigurationName)'</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -8,11 +8,6 @@ if(-not ($RepoDir -and $SolutionDir -and $ProjectDir -and $ProjectName -and $Tar
 	exit 1
 }
 
-if ($PSBoundParameters.ContainsKey('Disable'))
-{
-	Write-Verbose "Script disabled; no actions will be taken on the files."
-}
-
 if ($nuspec)
 {
 	Write-Verbose "nuspec file $nuspec"

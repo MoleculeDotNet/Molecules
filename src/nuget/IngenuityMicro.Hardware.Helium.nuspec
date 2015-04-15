@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>IngenuityMicro.Hardware.Helium</id>
+    <title>Support for the IngenuityMicro Molecule.Net Oxygen processor board</title>
+    <version>0.1.0-beta</version>
+    <authors>Martin Calsyn, Justin Wilson</authors>
+    <owners>IngenuityMicro</owners>
+    <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
+    <projectUrl>https://github.com/MoleculeDotNet/Oxygen</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>.Net Micro Framework support for the IngenuityMicro Oxygen board running .Net Micro Framework</summary>
+    <description>
+      This library provides .Net Micro Framework support for the Molecule.Net 'Oxygen' STM32F411 processor board
+    </description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>Copyright 2015 IngenuityMicro</copyright>
+    <tags>NETMF MicroFramework IoT Molecule.Net Oxygen</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.SPOT.Native" />
+      <frameworkAssembly assemblyName="Microsoft.SPOT.Hardware" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

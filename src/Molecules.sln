@@ -17,6 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{A35738
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{2581CBDF-9D3C-4C43-BF4A-B3C9CEAE44F1}"
 	ProjectSection(SolutionItems) = preProject
+		nuget\IngenuityMicro.Hardware.Helium.nuspec = nuget\IngenuityMicro.Hardware.Helium.nuspec
+		nuget\IngenuityMicro.Hardware.Hydrogen.nuspec = nuget\IngenuityMicro.Hardware.Hydrogen.nuspec
+		nuget\IngenuityMicro.Hardware.Neon.nuspec = nuget\IngenuityMicro.Hardware.Neon.nuspec
 		nuget\IngenuityMicro.Hardware.Oxygen.nuspec = nuget\IngenuityMicro.Hardware.Oxygen.nuspec
 		nuget\IngenuityMicro.Hardware.Serial.nuspec = nuget\IngenuityMicro.Hardware.Serial.nuspec
 		nuget\IngenuityMicro.Net.nuspec = nuget\IngenuityMicro.Net.nuspec
@@ -36,6 +39,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Net", "IngenuityMicro.Net\IngenuityMicro.Net.csproj", "{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Serial", "IngenuityMicro.Hardware.Serial\IngenuityMicro.Hardware.Serial.csproj", "{BCAA003B-BF17-48EA-922A-24331A32E34A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Neon", "IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.Neon.csproj", "{DA09F76E-1655-442D-A3AC-3892FA963677}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Helium", "IngenuityMicro.Hardware.Helium\IngenuityMicro.Hardware.Helium.csproj", "{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Hydrogen", "IngenuityMicro.Hardware.Hydrogen\IngenuityMicro.Hardware.Hydrogen.csproj", "{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +68,18 @@ Global
 		{BCAA003B-BF17-48EA-922A-24331A32E34A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCAA003B-BF17-48EA-922A-24331A32E34A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCAA003B-BF17-48EA-922A-24331A32E34A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA09F76E-1655-442D-A3AC-3892FA963677}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA09F76E-1655-442D-A3AC-3892FA963677}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA09F76E-1655-442D-A3AC-3892FA963677}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA09F76E-1655-442D-A3AC-3892FA963677}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,5 +89,8 @@ Global
 		{66B08BE0-EF22-47E3-899D-E58E9E952B9F} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{BCAA003B-BF17-48EA-922A-24331A32E34A} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
+		{DA09F76E-1655-442D-A3AC-3892FA963677} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
+		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
+		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 	EndGlobalSection
 EndGlobal

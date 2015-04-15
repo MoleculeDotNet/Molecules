@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>IngenuityMicro.Hardware.Serial</id>
+    <title>Serial comms helper classes for IngenuityMicro Molecule.net boards</title>
+    <version>0.1.0-beta</version>
+    <authors>Martin Calsyn, Justin Wilson</authors>
+    <owners>IngenuityMicro</owners>
+    <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
+    <projectUrl>https://github.com/MoleculeDotNet/Oxygen</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Serial comms helper classes for .Net Micro Framework on Molecule.Net boards</summary>
+    <description>
+      This library provides serial communication helper classes for the .Net Micro Framework on Molecule.Net boards
+    </description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>Copyright 2015 IngenuityMicro</copyright>
+    <tags>NETMF MicroFramework IoT Molecule.Net</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.SPOT.Native" />
+      <frameworkAssembly assemblyName="Microsoft.SPOT.Hardware" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

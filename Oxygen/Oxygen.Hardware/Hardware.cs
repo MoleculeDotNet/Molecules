@@ -1,7 +1,7 @@
 using System.Threading;
 using Microsoft.SPOT.Hardware;
 
-namespace IngenuityMicro.Molecule.Oxygen.Hardware
+namespace IngenuityMicro.Hardware.Oxygen
 {
     /// <summary>
     /// Hardware definitions and helper functions for the Oxygen processor board

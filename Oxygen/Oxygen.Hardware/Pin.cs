@@ -1,7 +1,7 @@
 using Microsoft.SPOT.Hardware;
 // ReSharper disable InconsistentNaming
 
-namespace IngenuityMicro.Molecule.Oxygen.Hardware
+namespace IngenuityMicro.Hardware.Oxygen
 {
     /// <summary>
     /// Pin definitions for the Molecule.Net Oxygen board

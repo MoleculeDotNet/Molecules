@@ -1,3 +1,4 @@
+#define VERBOSE
 using System;
 using System.Collections;
 using System.Diagnostics;
@@ -66,7 +67,7 @@ namespace IngenuityMicro.Hardware.Serial
 
         #region Sending Commands
 
-        private void SendCommand(string send)
+        public void SendCommand(string send)
         {
             lock (_lockSendExpect)
             {
@@ -75,12 +76,12 @@ namespace IngenuityMicro.Hardware.Serial
             }
         }
 
-        private void SendAndExpect(string send, string expect)
+        public void SendAndExpect(string send, string expect)
         {
             SendAndExpect(send, expect, DefaultCommandTimeout);
         }
 
-        private void SendAndExpect(string send, string expect, int timeout)
+        public void SendAndExpect(string send, string expect, int timeout)
         {
             lock (_lockSendExpect)
             {
@@ -90,12 +91,38 @@ namespace IngenuityMicro.Hardware.Serial
             }
         }
 
-        private string SendCommandAndReadReply(string command, string replyPrefix)
+        public string[] SendAndReadUntil(string send, string terminator)
+        {
+            return SendAndReadUntil(send, terminator, DefaultCommandTimeout);
+        }
+
+        public string[] SendAndReadUntil(string send, string terminator, int timeout)
+        {
+            ArrayList result = new ArrayList();
+            SendCommand(send);
+            do
+            {
+                var line = GetReplyWithTimeout(timeout);
+                if (line != null && line.Length > 0)
+                {
+                    // in case echo is on
+                    if (line.IndexOf(send) == 0)
+                        continue;
+                    // read until we see the magic termination string - usually 'OK'
+                    if (line.IndexOf(terminator) == 0)
+                        break;
+                    result.Add(line);
+                }
+            } while (true);
+            return (string[]) result.ToArray(typeof(string));
+        }
+
+        public string SendCommandAndReadReply(string command, string replyPrefix)
         {
             return SendCommandAndReadReply(command, replyPrefix, DefaultCommandTimeout);
         }
 
-        private string SendCommandAndReadReply(string command, string replyPrefix, int timeout)
+        public string SendCommandAndReadReply(string command, string replyPrefix, int timeout)
         {
             var reply = SendCommandAndReadReply(command, DefaultCommandTimeout);
             if (replyPrefix != null)
@@ -107,23 +134,23 @@ namespace IngenuityMicro.Hardware.Serial
             return reply;
         }
 
-        private string[] SendCommandAndParseReply(string command, string replyPrefix, char delimiter)
+        public string[] SendCommandAndParseReply(string command, string replyPrefix, char delimiter)
         {
             return SendCommandAndParseReply(command, replyPrefix, delimiter, DefaultCommandTimeout);
         }
 
-        private string[] SendCommandAndParseReply(string command, string replyPrefix, char delimiter, int timeout)
+        public string[] SendCommandAndParseReply(string command, string replyPrefix, char delimiter, int timeout)
         {
             var reply = SendCommandAndReadReply(command, replyPrefix, timeout);
             return reply.Split(delimiter);
         }
 
-        private string SendCommandAndReadReply(string command)
+        public string SendCommandAndReadReply(string command)
         {
             return SendCommandAndReadReply(command, DefaultCommandTimeout);
         }
 
-        private string SendCommandAndReadReply(string command, int timeout)
+        public string SendCommandAndReadReply(string command, int timeout)
         {
             string response;
             lock (_lockSendExpect)
@@ -142,22 +169,22 @@ namespace IngenuityMicro.Hardware.Serial
 
         #region Parse responses
 
-        private void Expect(string expect)
+        public void Expect(string expect)
         {
             Expect(null, expect, DefaultCommandTimeout);
         }
 
-        private void Expect(string expect, int timeout)
+        public void Expect(string expect, int timeout)
         {
             Expect(null, expect, timeout);
         }
 
-        private void Expect(string[] accept, string expect)
+        public void Expect(string[] accept, string expect)
         {
             Expect(accept, expect, DefaultCommandTimeout);
         }
 
-        private void Expect(string[] accept, string expect, int timeout)
+        public void Expect(string[] accept, string expect, int timeout)
         {
             if (accept == null)
                 accept = new[] {""};
@@ -192,7 +219,7 @@ namespace IngenuityMicro.Hardware.Serial
             }
         }
 
-        private string GetReplyWithTimeout(int timeout)
+        public string GetReplyWithTimeout(int timeout)
         {
             string response = null;
             bool haveNewData;
@@ -237,7 +264,7 @@ namespace IngenuityMicro.Hardware.Serial
             {
                 string newInput = ReadExisting();
 #if VERBOSE
-                Dbg("ReadExisting : " + newInput);
+                //Dbg("ReadExisting : " + newInput);
 #endif
                 if (newInput != null && newInput.Length > 0)
                 {

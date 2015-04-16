@@ -25,14 +25,22 @@ namespace IngenuityMicro.Hardware.Neon
         public const string ListAccessPointsCommand = "AT+CWLAP";
         public const string JoinAccessPointCommand = "AT+CWJAP=";
         public const string QuitAccessPointCommand = "AT+CWQAP";
+        public const string SetMuxModeCommand = "AT+CIPMUX=";
+        public const string SessionStartCommand = "AT+CIPSTART=";
+        public const string LinkedReply = "Linked";
+        public const string SendCommand = "AT+CIPSEND=";
+        public const string SendCommandReply = "SEND OK";
+        public const string ConnectReply = "CONNECT";
+        public const string ErrorReply = "ERROR";
 
+        private readonly ManualResetEvent _isInitializedEvent = new ManualResetEvent(false);
+        private readonly NeonSocket[] _sockets = new NeonSocket[4];
         private AtProtocolClient _neon;
-        private ManualResetEvent _isInitializedEvent = new ManualResetEvent(false);
 
         public event WifiBootedEventHandler Booted;
         public event WifiErrorEventHandler Error;
         public event WifiConnectionStateEventHandler ConnectionStateChanged;
-
+        
         public WifiDevice() : this("COM2")
         {
         }
@@ -46,10 +54,9 @@ namespace IngenuityMicro.Hardware.Neon
         private void Initialize(SerialPort port)
         {
             _neon = new AtProtocolClient(port);
-            _neon.UnsolicitedNotificationReceived += OnUnsolicitedNotificationReceived;
-            _neon.AddUnsolicitedNotifications(new string[]
+            _neon.AddUnsolicitedNotifications(new NotificationEntry[]
             {
-                "+IDP"
+                new NotificationEntry("+IPD", IPDHandler), 
             });
 
             _neon.Start();
@@ -73,6 +80,42 @@ namespace IngenuityMicro.Hardware.Neon
         public void Disconnect()
         {
             _neon.SendAndExpect(QuitAccessPointCommand, OK);
+        }
+
+        public NeonSocket OpenSocket(string hostNameOrAddress, int portNumber, bool useTcp)
+        {
+            int iSocket = -1;
+            for (int i = 0; i < _sockets.Length; ++i)
+            {
+                if (_sockets[i] == null)
+                {
+                    iSocket = i;
+                    break;
+                }
+            }
+            if (iSocket < 0)
+            {
+                throw new Exception("Too many sockets open - you must close one first.");
+            }
+
+            // We should get back "n,CONNECT" where n is the socket number
+            var reply = _neon.SendCommandAndReadReply(SessionStartCommand + iSocket + ',' + (useTcp ? "\"TCP\",\"" : "\"UDP\",\"") + hostNameOrAddress + "\"," + portNumber);
+            if (reply.IndexOf(ConnectReply)==-1)
+                throw new FailedExpectException(SessionStartCommand, ConnectReply, reply);
+            reply = reply.Substring(0, reply.IndexOf(','));
+            if (int.Parse(reply)!=iSocket)
+                throw new Exception("Unexpected socket response");
+
+            var result = new NeonSocket(this, iSocket);
+            _sockets[iSocket] = result;
+            return result;
+        }
+
+        internal void SendPayload(int iSocket, byte[] payload)
+        {
+            _neon.SendAndExpect(SendCommand + iSocket + ',' + payload.Length, OK);
+            _neon.Write(payload);
+            _neon.Find(SendCommandReply);
         }
 
         public void SetPower(bool state)
@@ -120,8 +163,20 @@ namespace IngenuityMicro.Hardware.Neon
             return (AccessPoint[])result.ToArray(typeof(AccessPoint));
         }
 
-        private void OnUnsolicitedNotificationReceived(object sender, UnsolicitedNotificationEventArgs args)
+        private void IPDHandler(object sender, ref string line, out string buffer, out int cbStream)
         {
+            // find the colon and divide into left and right
+            var idx = line.IndexOf(':');
+            var left = line.Substring(0, idx);
+            var tokens = left.Split(',');
+            var channel = int.Parse(tokens[1]);
+            cbStream = int.Parse(tokens[2]);
+            // Seed the buffer with everything to the right of the colon and decrement the cbStream count accordingly
+            buffer = line.Substring(idx + 1);
+            cbStream -= buffer.Length;
+            cbStream -= 2;
+            // don't enqueue anything
+            line = null;
         }
 
         private void BackgroundInitialize()
@@ -146,8 +201,12 @@ namespace IngenuityMicro.Hardware.Neon
                 {
                     _neon.SendAndExpect(AT, OK, 2000);
 
+                    SetMuxMode(true);
+
+                    // Get the firmware version information
                     this.Version = _neon.SendAndReadUntil(GetFirmwareVersionCommand, OK);
 
+                    // Collect the current IP address information
                     GetAddressInformation();
 
                     _isInitializedEvent.Set();
@@ -202,6 +261,11 @@ namespace IngenuityMicro.Hardware.Neon
                     this.MacAddress = arg;
                 }
             }
+        }
+
+        private void SetMuxMode(bool enableMux)
+        {
+            _neon.SendAndExpect(SetMuxModeCommand + (enableMux ? '1' : '0'), OK);
         }
     }
 }

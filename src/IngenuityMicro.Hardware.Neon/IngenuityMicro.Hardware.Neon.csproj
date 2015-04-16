@@ -31,6 +31,7 @@
   <ItemGroup>
     <Compile Include="AccessPoint.cs" />
     <Compile Include="Ecn.cs" />
+    <Compile Include="NeonSocket.cs" />
     <Compile Include="WifiDevice.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

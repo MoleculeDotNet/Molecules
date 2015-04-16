@@ -29,6 +29,9 @@ namespace NeonTest
 
             wifi.Connect("XXX","XXX");
 
+            var socket = wifi.OpenSocket("216.162.199.110", 80, true);
+            socket.Send("GET / HTTP/1.0\r\n\r\n");
+
             bool state = true;
             while (true)
             {

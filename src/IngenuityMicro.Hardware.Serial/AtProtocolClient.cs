@@ -9,7 +9,7 @@ using Microsoft.SPOT;
 
 namespace IngenuityMicro.Hardware.Serial
 {
-    public delegate void UnsolicitedNotificationEventHandler(object sender, UnsolicitedNotificationEventArgs args);
+    public delegate void UnsolicitedNotificationEventHandler(object sender, ref string line, out string buffer, out int cbStream);
 
     public class AtProtocolClient
     {
@@ -25,12 +25,10 @@ namespace IngenuityMicro.Hardware.Serial
         private readonly ArrayList _responseQueue = new ArrayList();
         private readonly AutoResetEvent _responseReceived = new AutoResetEvent(false);
         private readonly object _lockSendExpect = new object();
-
+        private readonly Hashtable _notifications = new Hashtable();
         private string _buffer;
         private StringBuilder _stream = new StringBuilder();
         private int _cbStream = 0;
-
-        public event UnsolicitedNotificationEventHandler UnsolicitedNotificationReceived;
 
         private class EventForDispatch
         {
@@ -60,8 +58,12 @@ namespace IngenuityMicro.Hardware.Serial
 
         public int CommandTimeout { get; set; }
 
-        public void AddUnsolicitedNotifications(string[] notifications)
+        public void AddUnsolicitedNotifications(NotificationEntry[] notifications)
         {
+            foreach (var item in notifications)
+            {
+                _notifications.Add(item.Notification, item.Handler);
+            }
         }
 
 
@@ -99,17 +101,28 @@ namespace IngenuityMicro.Hardware.Serial
             return SendAndReadUntil(send, terminator, DefaultCommandTimeout);
         }
 
+        public void Find(string successString)
+        {
+            Find(successString, DefaultCommandTimeout);
+        }
+
+        public void Find(string successString, int timeout)
+        {
+            SendAndReadUntil(null, successString, timeout);
+        }
+
         public string[] SendAndReadUntil(string send, string terminator, int timeout)
         {
             ArrayList result = new ArrayList();
-            SendCommand(send);
+            if (send!=null)
+                SendCommand(send);
             do
             {
                 var line = GetReplyWithTimeout(timeout);
                 if (line != null && line.Length > 0)
                 {
                     // in case echo is on
-                    if (line.IndexOf(send) == 0)
+                    if (send!=null && line.IndexOf(send) == 0)
                         continue;
                     // read until we see the magic termination string - usually 'OK'
                     if (line.IndexOf(terminator) == 0)
@@ -309,9 +322,8 @@ namespace IngenuityMicro.Hardware.Serial
 #if VERBOSE
                             Dbg("Received Line : " + line);
 #endif
-                            bool handled;
-                            HandleUnsolicitedResponses(line, out handled);
-                            if (!handled)
+                            HandleUnsolicitedResponses(ref line);
+                            if (line!=null)
                             {
                                 lock (_responseQueueLock)
                                 {
@@ -331,10 +343,26 @@ namespace IngenuityMicro.Hardware.Serial
             }
         }
 
-        private void HandleUnsolicitedResponses(string line, out bool handled)
+        private void HandleUnsolicitedResponses(ref string line)
         {
-            handled = false;
-
+            foreach (var item in _notifications.Keys)
+            {
+                if (line.IndexOf((string) item) == 0)
+                {
+                    var handler = (UnsolicitedNotificationEventHandler)_notifications[(string) item];
+                    int cbStream;
+                    string buffer;
+                    handler(this, ref line, out buffer, out cbStream);
+                    if (cbStream != 0)
+                    {
+                        _cbStream = cbStream;
+                        _stream.Clear();
+                        if (buffer!=null)
+                            _stream.Append(buffer);
+                    }
+                    break;
+                }
+            }
         }
 
         private static void EventDispatcher()
@@ -406,9 +434,14 @@ namespace IngenuityMicro.Hardware.Serial
             }
         }
 
-        private void Write(string txt)
+        public void Write(string txt)
         {
-            _port.Write(Encoding.UTF8.GetBytes(txt), 0, txt.Length);
+            this.Write(Encoding.UTF8.GetBytes(txt));
+        }
+
+        public void Write(byte[] payload)
+        {
+            _port.Write(payload, 0, payload.Length);
         }
 
         private void WriteCommand(string txt)

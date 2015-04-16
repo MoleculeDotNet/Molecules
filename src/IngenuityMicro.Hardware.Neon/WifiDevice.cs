@@ -35,6 +35,7 @@ namespace IngenuityMicro.Hardware.Neon
 
         public WifiDevice()
         {
+            SetPower(false);
             var port = new SerialPort("COM2", 115200, Parity.None, 8, StopBits.One);
             _neon = new AtProtocolClient(port);
             _neon.UnsolicitedNotificationReceived += OnUnsolicitedNotificationReceived;
@@ -123,8 +124,9 @@ namespace IngenuityMicro.Hardware.Neon
             {
                 if (!Oxygen.Hardware.RfPower.Read())
                 {
-                    Oxygen.Hardware.EnableRfPower(true);
-                    Thread.Sleep(500);
+                    Thread.Sleep(2000);
+                    SetPower(true);
+                    Thread.Sleep(2000);
                 }
 
                 // Auto-baud
@@ -134,7 +136,7 @@ namespace IngenuityMicro.Hardware.Neon
                 Thread.Sleep(100);
                 try
                 {
-                    _neon.SendAndExpect(AT, OK);
+                    _neon.SendAndExpect(AT, OK, 2000);
 
                     this.Version = _neon.SendAndReadUntil(GetFirmwareVersionCommand, OK);
 
@@ -158,7 +160,6 @@ namespace IngenuityMicro.Hardware.Neon
                 {
                     success = false;
                     Oxygen.Hardware.EnableRfPower(false);
-                    Thread.Sleep(2000);
                 }
             } while (!success && --retries > 0);
             if (!success)

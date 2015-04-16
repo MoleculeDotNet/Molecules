@@ -46,6 +46,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Hel
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Hydrogen", "IngenuityMicro.Hardware.Hydrogen\IngenuityMicro.Hardware.Hydrogen.csproj", "{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{9116141A-A51F-472D-A4FF-9C0897B33B34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeonTest", "test\NeonTest\NeonTest.csproj", "{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +84,12 @@ Global
 		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,5 +102,6 @@ Global
 		{DA09F76E-1655-442D-A3AC-3892FA963677} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
+		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C} = {9116141A-A51F-472D-A4FF-9C0897B33B34}
 	EndGlobalSection
 EndGlobal

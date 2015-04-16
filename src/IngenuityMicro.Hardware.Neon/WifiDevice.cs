@@ -26,26 +26,34 @@ namespace IngenuityMicro.Hardware.Neon
         public const string JoinAccessPointCommand = "AT+CWJAP=";
         public const string QuitAccessPointCommand = "AT+CWQAP";
 
-        private readonly AtProtocolClient _neon;
+        private AtProtocolClient _neon;
         private ManualResetEvent _isInitializedEvent = new ManualResetEvent(false);
 
         public event WifiBootedEventHandler Booted;
         public event WifiErrorEventHandler Error;
         public event WifiConnectionStateEventHandler ConnectionStateChanged;
 
-        public WifiDevice()
+        public WifiDevice() : this("COM2")
         {
-            SetPower(false);
-            var port = new SerialPort("COM2", 115200, Parity.None, 8, StopBits.One);
+        }
+
+        public WifiDevice(string comPortName)
+        {
+            var port = new SerialPort(comPortName, 115200, Parity.None, 8, StopBits.One);
+            Initialize(port);
+        }
+
+        private void Initialize(SerialPort port)
+        {
             _neon = new AtProtocolClient(port);
             _neon.UnsolicitedNotificationReceived += OnUnsolicitedNotificationReceived;
             _neon.AddUnsolicitedNotifications(new string[]
             {
-                "AT version:", "SDK version:", "compile time:"
+                "+IDP"
             });
 
             _neon.Start();
-            new Thread(Initialize).Start();
+            new Thread(BackgroundInitialize).Start();
         }
 
         public void Dispose()
@@ -116,10 +124,10 @@ namespace IngenuityMicro.Hardware.Neon
         {
         }
 
-        private void Initialize()
+        private void BackgroundInitialize()
         {
             bool success = false;
-            int retries = 4;
+            int retries = 10;
             do
             {
                 if (!Oxygen.Hardware.RfPower.Read())
@@ -159,7 +167,12 @@ namespace IngenuityMicro.Hardware.Neon
                 catch (CommandTimeoutException)
                 {
                     success = false;
-                    Oxygen.Hardware.EnableRfPower(false);
+                    // known firmware problem. Clear the AP.
+                    _neon.SendCommand(JoinAccessPointCommand + "\"\",\"\"");
+                    if ((retries%1) == 0)
+                    {
+                        Oxygen.Hardware.EnableRfPower(false);
+                    }
                 }
             } while (!success && --retries > 0);
             if (!success)

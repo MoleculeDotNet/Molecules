@@ -67,12 +67,15 @@ namespace IngenuityMicro.Hardware.Serial
 
         #region Sending Commands
 
+        private string _newline = "\r\n";
+        public string CommandNewLineSequence { get { return _newline; } set { _newline = value; } }
+
         public void SendCommand(string send)
         {
             lock (_lockSendExpect)
             {
                 DiscardBufferedInput();
-                WriteLine(send);
+                WriteCommand(send);
             }
         }
 
@@ -86,7 +89,7 @@ namespace IngenuityMicro.Hardware.Serial
             lock (_lockSendExpect)
             {
                 DiscardBufferedInput();
-                WriteLine(send);
+                WriteCommand(send);
                 Expect(new[] { send }, expect, timeout);
             }
         }
@@ -156,7 +159,7 @@ namespace IngenuityMicro.Hardware.Serial
             lock (_lockSendExpect)
             {
                 DiscardBufferedInput();
-                WriteLine(command);
+                WriteCommand(command);
                 do
                 {
                     response = GetReplyWithTimeout(timeout);
@@ -408,12 +411,12 @@ namespace IngenuityMicro.Hardware.Serial
             _port.Write(Encoding.UTF8.GetBytes(txt), 0, txt.Length);
         }
 
-        private void WriteLine(string txt)
+        private void WriteCommand(string txt)
         {
 #if VERBOSE
             Dbg("Sent: " + txt);
 #endif
-            this.Write(txt + "\r\n");
+            this.Write(txt + this.CommandNewLineSequence);
         }
 
         #endregion

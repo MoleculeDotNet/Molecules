@@ -278,66 +278,81 @@ namespace IngenuityMicro.Hardware.Serial
         {
             if (serialDataReceivedEventArgs.EventType == SerialData.Chars)
             {
-                string newInput = ReadExisting();
-#if VERBOSE
-                //Dbg("ReadExisting : " + newInput);
-#endif
-                if (newInput != null && newInput.Length > 0)
+                // keep doing this while there are bytes to read - don't rely on just even notification
+                while (_port.BytesToRead > 0)
                 {
-                    _buffer += newInput;
-
-                    if (_cbStream != 0)
-                    {
-                        // If we are capturing an input stream, then copy characters from the serial port
-                        //   until the count of desired characters == 0
-                        while (_cbStream > 0 && _buffer.Length > 0)
-                        {
-                            var eat = System.Math.Min(_buffer.Length, _cbStream);
-                            _stream.Append(_buffer.Substring(0, eat));
-                            _buffer = _buffer.Substring(eat);
-                            _cbStream -= eat;
-                        }
-                        // If we have fulfilled the stream request, then add the stream as a whole to the response queue
-                        if (_cbStream == 0)
-                        {
-                            lock (_responseQueueLock)
-                            {
-                                _responseQueue.Add(_stream.ToString());
-                                _stream.Clear();
-                                _responseReceived.Set();
-                            }
-                        }
-                    }
-
-                    // process whatever is left in the buffer (after fulfilling any stream requests)
-                    var idxNewline = _buffer.IndexOf('\n');
-                    while (idxNewline != -1 && _cbStream == 0)
-                    {
-                        var line = _buffer.Substring(0, idxNewline);
-                        _buffer = _buffer.Substring(idxNewline + 1);
-                        while (line.Length > 0 && line[line.Length - 1] == '\r')
-                            line = line.Substring(0, line.Length - 1);
-                        if (line.Length > 0)
-                        {
+                    string newInput = ReadExisting();
 #if VERBOSE
-                            Dbg("Received Line : " + line);
+                    Dbg("ReadExisting : " + newInput);
 #endif
-                            HandleUnsolicitedResponses(ref line);
-                            if (line!=null)
+                    if (newInput != null && newInput.Length > 0)
+                    {
+                        _buffer += newInput;
+
+                        // if we transitioned into a stream-reading mode with data still in the buffer, then loop
+                        //   here until the buffer is drained or the stream is satisfied - whichever comes first.
+                        do
+                        {
+                            // if _cbstream is non-zero, then we are reading a counted stream of bytes, not crlf-delimited input
+                            if (_cbStream != 0)
                             {
-                                lock (_responseQueueLock)
+                                // If we are capturing an input stream, then copy characters from the serial port
+                                //   until the count of desired characters == 0
+                                while (_cbStream > 0 && _buffer.Length > 0)
                                 {
-#if VERBOSE
-                                    Dbg("Enqueue Line : " + line);
-#endif
-                                    _responseQueue.Add(line);
-                                    _responseReceived.Set();
+                                    var eat = System.Math.Min(_buffer.Length, _cbStream);
+                                    _stream.Append(_buffer.Substring(0, eat));
+                                    _buffer = _buffer.Substring(eat);
+                                    _cbStream -= eat;
+                                }
+                                // If we have fulfilled the stream request, then add the stream as a whole to the response queue
+                                if (_cbStream == 0)
+                                {
+                                    lock (_responseQueueLock)
+                                    {
+                                        _responseQueue.Add(_stream.ToString());
+                                        _stream.Clear();
+                                        _responseReceived.Set();
+                                    }
                                 }
                             }
-                        }
 
-                        // See if we have another line buffered
-                        idxNewline = _buffer.IndexOf('\n');
+                            // process whatever is left in the buffer (after fulfilling any stream requests)
+                            var idxNewline = _buffer.IndexOf('\n');
+                            while (idxNewline != -1 && _cbStream == 0)
+                            {
+                                var line = _buffer.Substring(0, idxNewline);
+                                _buffer = _buffer.Substring(idxNewline + 1);
+                                while (line.Length > 0 && line[line.Length - 1] == '\r')
+                                    line = line.Substring(0, line.Length - 1);
+                                if (line.Length > 0)
+                                {
+#if VERBOSE
+                                    Dbg("Received Line : " + line);
+#endif
+                                    // This routine can alter cbStream, buffer, and line resulting in
+                                    //   some unhandled command input to be enqueued (whatever remains in 'line'
+                                    //   after this call and also possibly throwing us into stream mode 
+                                    //   in the middle of a command line (one of the less lovable aspects 
+                                    //   of the ESP8266 protocol).
+                                    HandleUnsolicitedResponses(ref line);
+                                    if (line != null)
+                                    {
+                                        lock (_responseQueueLock)
+                                        {
+#if VERBOSE
+                                            Dbg("Enqueue Line : " + line);
+#endif
+                                            _responseQueue.Add(line);
+                                            _responseReceived.Set();
+                                        }
+                                    }
+                                }
+
+                                // See if we have another line buffered
+                                idxNewline = _buffer.IndexOf('\n');
+                            }
+                        } while (_cbStream > 0 && _buffer.Length > 0);
                     }
                 }
             }

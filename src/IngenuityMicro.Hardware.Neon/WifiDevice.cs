@@ -163,7 +163,7 @@ namespace IngenuityMicro.Hardware.Neon
             return (AccessPoint[])result.ToArray(typeof(AccessPoint));
         }
 
-        private void IPDHandler(object sender, ref string line, out string buffer, out int cbStream)
+        private void IPDHandler(object sender, ref string line, out string stream, out int cbStream)
         {
             // find the colon and divide into left and right
             var idx = line.IndexOf(':');
@@ -172,9 +172,20 @@ namespace IngenuityMicro.Hardware.Neon
             var channel = int.Parse(tokens[1]);
             cbStream = int.Parse(tokens[2]);
             // Seed the buffer with everything to the right of the colon and decrement the cbStream count accordingly
-            buffer = line.Substring(idx + 1);
-            cbStream -= buffer.Length;
-            cbStream -= 2;
+            var right = line.Substring(idx + 1);
+
+            var eat = System.Math.Min(right.Length, cbStream);
+            stream = right.Substring(0, eat);
+            //line = right.Substring(eat);  ... not really needed - we don't expect trailing content even if the full payload was on the first line
+            cbStream -= eat;
+
+            // if we still need more stream input, that means we ate a crlf at the end of the first line.  Restore that.
+            //BUG: a protocol that just sent a newline will break. Need to remember the terminators that we removed and restore them exactly.
+            if (cbStream > 1)
+            {
+                stream += "\r\n";
+                cbStream -= 2;
+            }
             // don't enqueue anything
             line = null;
         }

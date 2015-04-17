@@ -1,4 +1,4 @@
-#define VERBOSE
+//#define VERBOSE
 using System;
 using System.Collections;
 using System.Diagnostics;
@@ -9,8 +9,33 @@ using Microsoft.SPOT;
 
 namespace IngenuityMicro.Hardware.Serial
 {
-    public delegate void UnsolicitedNotificationEventHandler(object sender, ref string line, out string buffer, out int cbStream);
+    /// <summary>
+    /// This delegate will be called whenever a unsolicited notification that you registered with AddUnsolicitedNotifications is received.
+    /// </summary>
+    /// <param name="sender">A reference to the AtProtocolClient that generated this call</param>
+    /// <param name="line">The received line containing the notification</param>
+    /// <param name="stream">If you will be starting a stream read, you can seed the stream by returning data here</param>
+    /// <param name="cbStream">The count of stream bytes to be received. If you return a non-zero value here, the receive engine will begin a counted-bytes stream read</param>
+    /// <param name="completionHandler">An optional handler to call on completion of a stream request. This is used only if stream is non null and/or cbStream is non-zero. If you do not
+    /// provide a handler, then the stream content will be pushed into the response queue and the next Expect/Read will return the stream</param>
+    /// <param name="context">A context object that will be passed back to the completion handler</param>
+    public delegate void UnsolicitedNotificationEventHandler(
+        object sender, ref string line, out string stream, out int cbStream,
+        out StreamSatisfiedHandler completionHandler, out object context);
 
+    /// <summary>
+    /// If you respond to an UnsolicitedNotificationEvent by returning a completion handler, then this
+    /// delegate will be called when the stream request has been satisfied (that is, all bytes received).
+    /// </summary>
+    /// <param name="sender">Ref to the AtProtocolClient</param>
+    /// <param name="stream">The received data</param>
+    /// <param name="context">Any context information that you returned from the UnsolicitedNotificationEventHandler</param>
+    public delegate void StreamSatisfiedHandler(object sender, string stream, object context);
+
+    /// <summary>
+    /// Generalized client for interacting with AT-protocol hardware blocks like the ESP8266 and SIM800* (Adafruit Fona for instance). Handles various idiosyncracies among
+    /// the different approaches to AT protocols and support counted-stream reading, even when embedded within a command line (e.g., ESP8266).
+    /// </summary>
     public class AtProtocolClient
     {
         public const int DefaultCommandTimeout = 10000;
@@ -29,6 +54,8 @@ namespace IngenuityMicro.Hardware.Serial
         private string _buffer;
         private StringBuilder _stream = new StringBuilder();
         private int _cbStream = 0;
+        private object _streamContext;
+        private StreamSatisfiedHandler _streamCompletionHandler;
 
         private class EventForDispatch
         {
@@ -283,7 +310,7 @@ namespace IngenuityMicro.Hardware.Serial
                 {
                     string newInput = ReadExisting();
 #if VERBOSE
-                    Dbg("ReadExisting : " + newInput);
+                    //Dbg("ReadExisting : " + newInput);
 #endif
                     if (newInput != null && newInput.Length > 0)
                     {
@@ -308,12 +335,24 @@ namespace IngenuityMicro.Hardware.Serial
                                 // If we have fulfilled the stream request, then add the stream as a whole to the response queue
                                 if (_cbStream == 0)
                                 {
-                                    lock (_responseQueueLock)
+                                    if (_streamCompletionHandler != null)
                                     {
-                                        _responseQueue.Add(_stream.ToString());
-                                        _stream.Clear();
-                                        _responseReceived.Set();
+                                        try
+                                        {
+                                            _streamCompletionHandler(this, _stream.ToString(), _streamContext);
+                                        }
+                                        catch (Exception)
+                                        {
+                                            // mask exceptions in callback so that they don't kill our read loop
+                                        }
                                     }
+                                    else
+                                    {
+                                        EnqueueLine(_stream.ToString());
+                                    }
+                                    _streamCompletionHandler = null;
+                                    _streamContext = null;
+                                    _stream.Clear();
                                 }
                             }
 
@@ -337,16 +376,7 @@ namespace IngenuityMicro.Hardware.Serial
                                     //   of the ESP8266 protocol).
                                     HandleUnsolicitedResponses(ref line);
                                     if (line != null)
-                                    {
-                                        lock (_responseQueueLock)
-                                        {
-#if VERBOSE
-                                            Dbg("Enqueue Line : " + line);
-#endif
-                                            _responseQueue.Add(line);
-                                            _responseReceived.Set();
-                                        }
-                                    }
+                                        EnqueueLine(line);
                                 }
 
                                 // See if we have another line buffered
@@ -358,6 +388,19 @@ namespace IngenuityMicro.Hardware.Serial
             }
         }
 
+        private void EnqueueLine(string line)
+        {
+            lock (_responseQueueLock)
+            {
+#if VERBOSE
+                Dbg("Enqueue Line : " + line);
+#endif
+                _responseQueue.Add(line);
+                _responseReceived.Set();
+            }
+        }
+
+
         private void HandleUnsolicitedResponses(ref string line)
         {
             foreach (var item in _notifications.Keys)
@@ -367,13 +410,40 @@ namespace IngenuityMicro.Hardware.Serial
                     var handler = (UnsolicitedNotificationEventHandler)_notifications[(string) item];
                     int cbStream;
                     string buffer;
-                    handler(this, ref line, out buffer, out cbStream);
+                    handler(this, ref line, out buffer, out cbStream, out _streamCompletionHandler, out _streamContext);
                     if (cbStream != 0)
                     {
                         _cbStream = cbStream;
                         _stream.Clear();
                         if (buffer!=null)
                             _stream.Append(buffer);
+                    }
+                    if (_cbStream == 0 && buffer != null && buffer.Length > 0)
+                    {
+                        // The stream was immediately satisfied
+                        if (_streamCompletionHandler != null)
+                        {
+                            try
+                            {
+                                _streamCompletionHandler(this, buffer, _streamContext);
+                            }
+                            catch (Exception)
+                            {
+                                // mask exceptions in callback so that they don't kill our read loop
+                            }
+                            _streamCompletionHandler = null;
+                            _streamContext = null;
+                        }
+                        else // we got some stream input, but the caller did not provide a callback - push it into the output queue
+                        {
+                            // Do this here to preserve ordering
+                            if (line != null && line.Length > 0)
+                            {
+                                EnqueueLine(line);
+                                line = null;
+                            }
+                            EnqueueLine(buffer);
+                        }
                     }
                     break;
                 }

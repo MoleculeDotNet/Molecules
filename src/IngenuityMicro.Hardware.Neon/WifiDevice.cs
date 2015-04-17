@@ -163,7 +163,7 @@ namespace IngenuityMicro.Hardware.Neon
             return (AccessPoint[])result.ToArray(typeof(AccessPoint));
         }
 
-        private void IPDHandler(object sender, ref string line, out string stream, out int cbStream)
+        private void IPDHandler(object sender, ref string line, out string stream, out int cbStream, out StreamSatisfiedHandler completionHandler, out object context)
         {
             // find the colon and divide into left and right
             var idx = line.IndexOf(':');
@@ -188,6 +188,23 @@ namespace IngenuityMicro.Hardware.Neon
             }
             // don't enqueue anything
             line = null;
+            context = channel;
+            completionHandler = IDPCompleted;
+        }
+
+        public void IDPCompleted(object sender, string stream, object context)
+        {
+            if (context == null)
+                return;
+            var channel = (int) context;
+            if (_sockets[channel] != null)
+            {
+                //REVIEW: would be more efficient to use the AtProtocolClient's event queue and not spin up new threads
+                new Thread(() =>
+                {
+                    _sockets[channel].ReceivedData(stream);
+                }).Start();
+            }
         }
 
         private void BackgroundInitialize()

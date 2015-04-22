@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using IngenuityMicro.Net;
 using IngenuityMicro.Hardware.Oxygen;
-using IngenuityMicro.Hardware.Serial;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using System.IO.Ports;
@@ -35,7 +34,7 @@ namespace IngenuityMicro.Hardware.Neon
 
         private readonly ManualResetEvent _isInitializedEvent = new ManualResetEvent(false);
         private readonly NeonSocket[] _sockets = new NeonSocket[4];
-        private AtProtocolClient _neon;
+        private ESP8266Serial _neon;
 
         public event WifiBootedEventHandler Booted;
         public event WifiErrorEventHandler Error;
@@ -53,12 +52,8 @@ namespace IngenuityMicro.Hardware.Neon
 
         private void Initialize(SerialPort port)
         {
-            _neon = new AtProtocolClient(port);
-            _neon.AddUnsolicitedNotifications(new NotificationEntry[]
-            {
-                new NotificationEntry("+IPD", IPDHandler), 
-            });
-
+            _neon = new ESP8266Serial(port);
+            _neon.DataReceived += NeonOnDataReceived;
             _neon.Start();
             new Thread(BackgroundInitialize).Start();
         }
@@ -146,7 +141,7 @@ namespace IngenuityMicro.Hardware.Neon
             var response = _neon.SendAndReadUntil(ListAccessPointsCommand, OK);
             foreach (var line in response)
             {
-                var info = Utilities.Unquote(line.Substring(line.IndexOf(':') + 1));
+                var info = Unquote(line.Substring(line.IndexOf(':') + 1));
                 var tokens = info.Split(',');
                 if (tokens.Length >= 4)
                 {
@@ -163,40 +158,37 @@ namespace IngenuityMicro.Hardware.Neon
             return (AccessPoint[])result.ToArray(typeof(AccessPoint));
         }
 
-        private void IPDHandler(object sender, ref string line, out string stream, out int cbStream, out StreamSatisfiedHandler completionHandler, out object context)
+        //private void IPDHandler(object sender, ref string line, out string stream, out int cbStream, out StreamSatisfiedHandler completionHandler, out object context)
+        //{
+        //    // find the colon and divide into left and right
+        //    var idx = line.IndexOf(':');
+        //    var left = line.Substring(0, idx);
+        //    var tokens = left.Split(',');
+        //    var channel = int.Parse(tokens[1]);
+        //    cbStream = int.Parse(tokens[2]);
+        //    // Seed the buffer with everything to the right of the colon and decrement the cbStream count accordingly
+        //    var right = line.Substring(idx + 1);
+
+        //    var eat = System.Math.Min(right.Length, cbStream);
+        //    stream = right.Substring(0, eat);
+        //    //line = right.Substring(eat);  ... not really needed - we don't expect trailing content even if the full payload was on the first line
+        //    cbStream -= eat;
+
+        //    // if we still need more stream input, that means we ate a crlf at the end of the first line.  Restore that.
+        //    //BUG: a protocol that just sent a newline will break. Need to remember the terminators that we removed and restore them exactly.
+        //    if (cbStream > 1)
+        //    {
+        //        stream += "\r\n";
+        //        cbStream -= 2;
+        //    }
+        //    // don't enqueue anything
+        //    line = null;
+        //    context = channel;
+        //    completionHandler = IDPCompleted;
+        //}
+
+        private void NeonOnDataReceived(object sender, byte[] stream, int channel)
         {
-            // find the colon and divide into left and right
-            var idx = line.IndexOf(':');
-            var left = line.Substring(0, idx);
-            var tokens = left.Split(',');
-            var channel = int.Parse(tokens[1]);
-            cbStream = int.Parse(tokens[2]);
-            // Seed the buffer with everything to the right of the colon and decrement the cbStream count accordingly
-            var right = line.Substring(idx + 1);
-
-            var eat = System.Math.Min(right.Length, cbStream);
-            stream = right.Substring(0, eat);
-            //line = right.Substring(eat);  ... not really needed - we don't expect trailing content even if the full payload was on the first line
-            cbStream -= eat;
-
-            // if we still need more stream input, that means we ate a crlf at the end of the first line.  Restore that.
-            //BUG: a protocol that just sent a newline will break. Need to remember the terminators that we removed and restore them exactly.
-            if (cbStream > 1)
-            {
-                stream += "\r\n";
-                cbStream -= 2;
-            }
-            // don't enqueue anything
-            line = null;
-            context = channel;
-            completionHandler = IDPCompleted;
-        }
-
-        public void IDPCompleted(object sender, string stream, object context)
-        {
-            if (context == null)
-                return;
-            var channel = (int) context;
             if (_sockets[channel] != null)
             {
                 //REVIEW: would be more efficient to use the AtProtocolClient's event queue and not spin up new threads
@@ -280,12 +272,12 @@ namespace IngenuityMicro.Hardware.Neon
             {
                 if (line.IndexOf("STAIP") != -1)
                 {
-                    var arg = Utilities.Unquote(line.Substring(line.IndexOf(',')+1));
+                    var arg = Unquote(line.Substring(line.IndexOf(',')+1));
                     this.IPAddress = IPAddress.Parse(arg);
                 }
                 else if (line.IndexOf("STAMAC") != -1)
                 {
-                    var arg = Utilities.Unquote(line.Substring(line.IndexOf(',')+1));
+                    var arg = Unquote(line.Substring(line.IndexOf(',')+1));
                     this.MacAddress = arg;
                 }
             }
@@ -294,6 +286,21 @@ namespace IngenuityMicro.Hardware.Neon
         private void SetMuxMode(bool enableMux)
         {
             _neon.SendAndExpect(SetMuxModeCommand + (enableMux ? '1' : '0'), OK);
+        }
+
+        private string Unquote(string quotedString)
+        {
+            quotedString = quotedString.Trim();
+            var quoteChar = quotedString[0];
+            if (quoteChar != '\'' && quoteChar != '"' && quoteChar != '(')
+                return quotedString;
+            if (quoteChar == '(')
+                quoteChar = ')';
+            if (quotedString.LastIndexOf(quoteChar) != quotedString.Length - 1)
+                return quotedString;
+            quotedString = quotedString.Substring(1);
+            quotedString = quotedString.Substring(0, quotedString.Length - 1);
+            return /* the now unquoted */ quotedString;
         }
     }
 }

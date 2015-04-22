@@ -1,7 +1,7 @@
 using System;
 using Microsoft.SPOT;
 
-namespace IngenuityMicro.Hardware.Serial
+namespace IngenuityMicro.Hardware.Neon
 {
     public class FailedExpectException : Exception
     {

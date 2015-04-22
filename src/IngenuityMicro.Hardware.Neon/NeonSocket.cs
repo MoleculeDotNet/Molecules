@@ -39,7 +39,7 @@ namespace IngenuityMicro.Hardware.Neon
             }
         }
 
-        internal void ReceivedData(string data)
+        internal void ReceivedData(byte[] data)
         {
             if (this.DataReceived != null)
                 this.DataReceived(this, new SocketReceivedDataEventArgs(data));
@@ -53,11 +53,11 @@ namespace IngenuityMicro.Hardware.Neon
 
     public class SocketReceivedDataEventArgs : EventArgs
     {
-        public SocketReceivedDataEventArgs(string data)
+        public SocketReceivedDataEventArgs(byte[] data)
         {
             this.Data = data;
         }
 
-        public string Data { get; private set; }
+        public byte[] Data { get; private set; }
     }
 }

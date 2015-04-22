@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Microsoft.SPOT;
 using IngenuityMicro.Hardware.Oxygen;
 using IngenuityMicro.Hardware.Neon;
@@ -27,12 +28,12 @@ namespace NeonTest
                 Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
             }
 
-            wifi.Connect("XXX","XXX");
+            wifi.Connect("CloudGate","Escal8shun");
 
             var socket = wifi.OpenSocket("216.162.199.110", 80, true);
             socket.DataReceived += (sender, args) =>
             {
-                Debug.Print("response received : " + args.Data);
+                Debug.Print("response received : " + new string(Encoding.UTF8.GetChars(args.Data)));
             };
             socket.SocketClosed += (sender, args) =>
             {

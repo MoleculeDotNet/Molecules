@@ -30,7 +30,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AccessPoint.cs" />
+    <Compile Include="CircularBuffer.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="Ecn.cs" />
+    <Compile Include="ESP8266Serial.cs" />
     <Compile Include="NeonSocket.cs" />
     <Compile Include="WifiDevice.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -46,10 +49,6 @@
     <ProjectReference Include="..\IngenuityMicro.Hardware.Oxygen\IngenuityMicro.Hardware.Oxygen.csproj">
       <Project>{66B08BE0-EF22-47E3-899D-E58E9E952B9F}</Project>
       <Name>IngenuityMicro.Hardware.Oxygen</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\IngenuityMicro.Hardware.Serial\IngenuityMicro.Hardware.Serial.csproj">
-      <Project>{BCAA003B-BF17-48EA-922A-24331A32E34A}</Project>
-      <Name>IngenuityMicro.Hardware.Serial</Name>
     </ProjectReference>
     <ProjectReference Include="..\IngenuityMicro.Net\IngenuityMicro.Net.csproj">
       <Project>{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}</Project>

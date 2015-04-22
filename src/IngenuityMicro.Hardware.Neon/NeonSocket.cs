@@ -33,10 +33,6 @@ namespace IngenuityMicro.Hardware.Neon
 
         public void Close()
         {
-            if (SocketClosed != null)
-            {
-                SocketClosed(this, EventArgs.Empty);
-            }
         }
 
         internal void ReceivedData(byte[] data)
@@ -47,7 +43,10 @@ namespace IngenuityMicro.Hardware.Neon
 
         internal void SocketClosedByPeer()
         {
-            Close();
+            if (SocketClosed != null)
+            {
+                SocketClosed(this, EventArgs.Empty);
+            }
         }
     }
 

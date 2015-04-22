@@ -28,7 +28,7 @@ namespace NeonTest
                 Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
             }
 
-            wifi.Connect("CloudGate","Escal8shun");
+            wifi.Connect("XXX","XXX");
 
             var socket = wifi.OpenSocket("216.162.199.110", 80, true);
             socket.DataReceived += (sender, args) =>

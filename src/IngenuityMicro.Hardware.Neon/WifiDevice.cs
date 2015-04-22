@@ -54,6 +54,7 @@ namespace IngenuityMicro.Hardware.Neon
         {
             _neon = new ESP8266Serial(port);
             _neon.DataReceived += NeonOnDataReceived;
+            _neon.SocketClosed += NeonOnSocketClosed;
             _neon.Start();
             new Thread(BackgroundInitialize).Start();
         }
@@ -158,35 +159,6 @@ namespace IngenuityMicro.Hardware.Neon
             return (AccessPoint[])result.ToArray(typeof(AccessPoint));
         }
 
-        //private void IPDHandler(object sender, ref string line, out string stream, out int cbStream, out StreamSatisfiedHandler completionHandler, out object context)
-        //{
-        //    // find the colon and divide into left and right
-        //    var idx = line.IndexOf(':');
-        //    var left = line.Substring(0, idx);
-        //    var tokens = left.Split(',');
-        //    var channel = int.Parse(tokens[1]);
-        //    cbStream = int.Parse(tokens[2]);
-        //    // Seed the buffer with everything to the right of the colon and decrement the cbStream count accordingly
-        //    var right = line.Substring(idx + 1);
-
-        //    var eat = System.Math.Min(right.Length, cbStream);
-        //    stream = right.Substring(0, eat);
-        //    //line = right.Substring(eat);  ... not really needed - we don't expect trailing content even if the full payload was on the first line
-        //    cbStream -= eat;
-
-        //    // if we still need more stream input, that means we ate a crlf at the end of the first line.  Restore that.
-        //    //BUG: a protocol that just sent a newline will break. Need to remember the terminators that we removed and restore them exactly.
-        //    if (cbStream > 1)
-        //    {
-        //        stream += "\r\n";
-        //        cbStream -= 2;
-        //    }
-        //    // don't enqueue anything
-        //    line = null;
-        //    context = channel;
-        //    completionHandler = IDPCompleted;
-        //}
-
         private void NeonOnDataReceived(object sender, byte[] stream, int channel)
         {
             if (_sockets[channel] != null)
@@ -195,6 +167,18 @@ namespace IngenuityMicro.Hardware.Neon
                 new Thread(() =>
                 {
                     _sockets[channel].ReceivedData(stream);
+                }).Start();
+            }
+        }
+
+        private void NeonOnSocketClosed(object sender, int channel)
+        {
+            if (_sockets[channel] != null)
+            {
+                //REVIEW: would be more efficient to use the AtProtocolClient's event queue and not spin up new threads
+                new Thread(() =>
+                {
+                    _sockets[channel].SocketClosedByPeer();
                 }).Start();
             }
         }

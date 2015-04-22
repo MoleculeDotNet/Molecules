@@ -12,6 +12,7 @@ namespace IngenuityMicro.Hardware.Neon
     internal class ESP8266Serial
     {
         public delegate void DataReceivedHandler(object sender, byte[] stream, int channel);
+        public delegate void SocketClosedHandler(object sender, int channel);
 
         public const int DefaultCommandTimeout = 10000;
         private readonly SerialPort _port;
@@ -26,6 +27,8 @@ namespace IngenuityMicro.Hardware.Neon
         private readonly CircularBuffer _stream = new CircularBuffer(256, 1, 256);
 
         public event DataReceivedHandler DataReceived;
+        public event SocketClosedHandler SocketClosed;
+
         private int _cbStream = 0;
         private int _receivingOnChannel;
         private readonly ManualResetEvent _noStreamRead = new ManualResetEvent(true);
@@ -356,7 +359,16 @@ namespace IngenuityMicro.Hardware.Neon
 #if VERBOSE
                                     Dbg("Received Line : " + line);
 #endif
-                                    EnqueueLine(line);
+                                    var idxClosed = line.IndexOf(",CLOSED");
+                                    if (idxClosed != -1)
+                                    {
+                                        // Handle socket-closed notification
+                                        var channel = int.Parse(line.Substring(0, idxClosed));
+                                        if (this.SocketClosed != null)
+                                            this.SocketClosed(this, channel);
+                                    }
+                                    else
+                                        EnqueueLine(line);
                                 }
                             }
                             else // idxIPD found before newline

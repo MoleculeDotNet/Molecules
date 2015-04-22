@@ -7,13 +7,19 @@ namespace IngenuityMicro.Hardware.Neon
 {
     internal class CircularBuffer : ICollection
     {
+        // Capacity growth multiplier and constant. Capacity grows as _capacity * _growM + _growC
+        private readonly int _growM;
+        private readonly int _growC;
+
+        // current capacity
         private int _capacity;
+        // ring pointers
         private int _head;
         private int _tail;
+        // current occupied space (count of bytes in the ring)
         private int _size;
+        // the actual data
         private byte[] _buffer;
-        private int _growM;
-        private int _growC;
 
         private object _syncRoot = new object();
 

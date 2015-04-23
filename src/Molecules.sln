@@ -21,7 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{2581CBDF
 		nuget\IngenuityMicro.Hardware.Hydrogen.nuspec = nuget\IngenuityMicro.Hardware.Hydrogen.nuspec
 		nuget\IngenuityMicro.Hardware.Neon.nuspec = nuget\IngenuityMicro.Hardware.Neon.nuspec
 		nuget\IngenuityMicro.Hardware.Oxygen.nuspec = nuget\IngenuityMicro.Hardware.Oxygen.nuspec
-		nuget\IngenuityMicro.Hardware.Serial.nuspec = nuget\IngenuityMicro.Hardware.Serial.nuspec
 		nuget\IngenuityMicro.Net.nuspec = nuget\IngenuityMicro.Net.nuspec
 		nuget\IngenuityMicro.Utility.nuspec = nuget\IngenuityMicro.Utility.nuspec
 	EndProjectSection

@@ -3,7 +3,7 @@
   <metadata>
     <id>IngenuityMicro.Hardware.Oxygen</id>
     <title>Support for the IngenuityMicro Molecule.Net Oxygen processor board</title>
-    <version>0.1.0-beta</version>
+    <version>0.2.0-beta</version>
     <authors>Martin Calsyn, Justin Wilson</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->

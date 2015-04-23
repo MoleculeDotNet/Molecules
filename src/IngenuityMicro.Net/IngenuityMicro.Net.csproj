@@ -29,7 +29,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="HttpBase.cs" />
+    <Compile Include="HttpClient.cs" />
+    <Compile Include="HttpRequest.cs" />
+    <Compile Include="HttpResponse.cs" />
+    <Compile Include="HttpVerb.cs" />
     <Compile Include="INetworkAdapter.cs" />
+    <Compile Include="ISocket.cs" />
     <Compile Include="IWifiAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

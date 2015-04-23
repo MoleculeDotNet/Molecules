@@ -37,8 +37,8 @@ namespace IngenuityMicro.Hardware.Neon
         private ESP8266Serial _neon;
 
         public event WifiBootedEventHandler Booted;
-        public event WifiErrorEventHandler Error;
-        public event WifiConnectionStateEventHandler ConnectionStateChanged;
+        //public event WifiErrorEventHandler Error;
+        //public event WifiConnectionStateEventHandler ConnectionStateChanged;
         
         public WifiDevice() : this("COM2")
         {
@@ -78,7 +78,7 @@ namespace IngenuityMicro.Hardware.Neon
             _neon.SendAndExpect(QuitAccessPointCommand, OK);
         }
 
-        public NeonSocket OpenSocket(string hostNameOrAddress, int portNumber, bool useTcp)
+        public ISocket OpenSocket(string hostNameOrAddress, int portNumber, bool useTcp)
         {
             int iSocket = -1;
             for (int i = 0; i < _sockets.Length; ++i)
@@ -94,17 +94,38 @@ namespace IngenuityMicro.Hardware.Neon
                 throw new Exception("Too many sockets open - you must close one first.");
             }
 
+            var result = new NeonSocket(this, iSocket, hostNameOrAddress, portNumber, useTcp);
+            _sockets[iSocket] = result;
+
+            return OpenSocket(iSocket);
+        }
+
+        internal NeonSocket OpenSocket(int socket)
+        {
             // We should get back "n,CONNECT" where n is the socket number
-            var reply = _neon.SendCommandAndReadReply(SessionStartCommand + iSocket + ',' + (useTcp ? "\"TCP\",\"" : "\"UDP\",\"") + hostNameOrAddress + "\"," + portNumber);
-            if (reply.IndexOf(ConnectReply)==-1)
+            var sock = _sockets[socket];
+            var reply = _neon.SendCommandAndReadReply(SessionStartCommand + socket + ',' + (sock.UseTcp ? "\"TCP\",\"" : "\"UDP\",\"") + sock.Hostname + "\"," + sock.Port);
+            if (reply.IndexOf(ConnectReply) == -1)
                 throw new FailedExpectException(SessionStartCommand, ConnectReply, reply);
             reply = reply.Substring(0, reply.IndexOf(','));
-            if (int.Parse(reply)!=iSocket)
+            if (int.Parse(reply) != socket)
                 throw new Exception("Unexpected socket response");
+            return sock;
+        }
 
-            var result = new NeonSocket(this, iSocket);
-            _sockets[iSocket] = result;
-            return result;
+        internal void DeleteSocket(int socket)
+        {
+            if (socket >= 0 && socket <= _sockets.Length)
+            {
+                _sockets[socket] = null;
+            }
+        }
+
+        internal void CloseSocket(int socket)
+        {
+            if (socket >= 0 && socket <= _sockets.Length)
+            {
+            }
         }
 
         internal void SendPayload(int iSocket, byte[] payload)

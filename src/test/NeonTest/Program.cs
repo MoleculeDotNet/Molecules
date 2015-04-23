@@ -4,6 +4,7 @@ using Microsoft.SPOT;
 using IngenuityMicro.Hardware.Oxygen;
 using IngenuityMicro.Hardware.Neon;
 using System.Threading;
+using IngenuityMicro.Net;
 using Microsoft.SPOT.Hardware;
 
 namespace NeonTest
@@ -14,8 +15,8 @@ namespace NeonTest
         {
             var wifi = new WifiDevice();
             wifi.Booted += WifiOnBooted;  // or you can wait on the wifi.IsInitializedEvent
-            wifi.Error += WifiOnError;
-            wifi.ConnectionStateChanged += WifiOnConnectionStateChanged;
+            //wifi.Error += WifiOnError;
+            //wifi.ConnectionStateChanged += WifiOnConnectionStateChanged;
 
             var apList = wifi.GetAccessPoints();
             Debug.Print("Access points:");
@@ -28,18 +29,23 @@ namespace NeonTest
                 Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
             }
 
-            wifi.Connect("XXX","XXX");
+            wifi.Connect("CloudGate","Escal8shun");
 
-            var socket = wifi.OpenSocket("216.162.199.110", 80, true);
-            socket.DataReceived += (sender, args) =>
-            {
-                Debug.Print("response received : " + new string(Encoding.UTF8.GetChars(args.Data)));
-            };
-            socket.SocketClosed += (sender, args) =>
-            {
-                Debug.Print("Socket closed");
-            };
-            socket.Send("GET / HTTP/1.0\r\n\r\n");
+            //var socket = wifi.OpenSocket("216.162.199.110", 80, true);
+            //socket.DataReceived += (sender, args) =>
+            //{
+            //    Debug.Print("response received : " + new string(Encoding.UTF8.GetChars(args.Data)));
+            //};
+            //socket.SocketClosed += (sender, args) =>
+            //{
+            //    Debug.Print("Socket closed");
+            //};
+            //socket.Send("GET / HTTP/1.0\r\n\r\n");
+
+            var httpClient = new HttpClient(wifi, "216.162.199.110");
+            var request = httpClient.CreateRequest();
+            request.ResponseReceived += HttpResponseReceived;
+            request.BeginRequest();
 
             bool state = true;
             while (true)
@@ -48,6 +54,10 @@ namespace NeonTest
                 state = !state;
                 Thread.Sleep(500);
             }
+        }
+
+        private static void HttpResponseReceived(object sender, HttpResponse args)
+        {
         }
 
         private static void WifiOnConnectionStateChanged(object sender, EventArgs args)

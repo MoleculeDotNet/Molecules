@@ -12,11 +12,9 @@ namespace IngenuityMicro.Net
         {
         }
 
-        public string Username { get; set; }
-
-        public string Password { get; set; }
-
         public Hashtable Headers { get { return _headers; } }
+
+        public string Body { get; set; }
 
         public string Accept
         {
@@ -34,6 +32,12 @@ namespace IngenuityMicro.Net
         {
             get { return (string)_headers["User-Agent"]; }
             set { _headers["User-Agent"] = value; }
+        }
+
+        public string ContentType
+        {
+            get { return (string)_headers["Content-Type"]; }
+            set { _headers["Content-Type"] = value; }
         }
     }
 }

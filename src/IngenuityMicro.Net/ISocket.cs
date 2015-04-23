@@ -16,7 +16,7 @@ namespace IngenuityMicro.Net
         public byte[] Data { get; private set; }
     }
 
-    public interface ISocket
+    public interface ISocket : IDisposable
     {
         void Open();
         void Close();

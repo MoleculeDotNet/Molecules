@@ -5,10 +5,11 @@ using Microsoft.SPOT;
 
 namespace IngenuityMicro.Net
 {
-    public class HttpClient : HttpBase
+    public class HttpClient : HttpBase, IDisposable
     {
         private readonly INetworkAdapter _adapter;
         private ISocket _socket;
+        private HttpRequest _activeRequest;
 
         public HttpClient(INetworkAdapter adapter) : this(adapter, null, 80)
         {
@@ -23,6 +24,15 @@ namespace IngenuityMicro.Net
             _adapter = adapter;
             this.Host = host;
             this.Port = port;
+        }
+
+        public void Dispose()
+        {
+            if (_socket != null)
+            {
+                _socket.Dispose();
+                _socket = null;                
+            }
         }
 
         public HttpRequest CreateRequest()
@@ -89,6 +99,10 @@ namespace IngenuityMicro.Net
 
         internal void SendRequest(HttpRequest req)
         {
+            if (_activeRequest!=null)
+                throw new InvalidOperationException("A request is already outstanding");
+            _activeRequest = req;
+
             EnsureSocketOpen();
 
             StringBuilder buffer = new StringBuilder();
@@ -121,10 +135,17 @@ namespace IngenuityMicro.Net
 
         private void SocketOnDataReceived(object sender, SocketReceivedDataEventArgs args)
         {
+            if (_activeRequest == null)
+                return;
+
+            _activeRequest.OnResponseReceived(args);
+
+            _activeRequest = null;
         }
 
         private void SocketOnSocketClosed(object sender, EventArgs args)
         {
+            // Nothing really to do here
         }
     }
 }

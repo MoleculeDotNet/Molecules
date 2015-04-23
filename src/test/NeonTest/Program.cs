@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Text;
 using Microsoft.SPOT;
 using IngenuityMicro.Hardware.Oxygen;
@@ -45,7 +46,7 @@ namespace NeonTest
             var httpClient = new HttpClient(wifi, "216.162.199.110");
             var request = httpClient.CreateRequest();
             request.ResponseReceived += HttpResponseReceived;
-            request.BeginRequest();
+            request.Send();
 
             bool state = true;
             while (true)
@@ -56,8 +57,27 @@ namespace NeonTest
             }
         }
 
-        private static void HttpResponseReceived(object sender, HttpResponse args)
+        private static void HttpResponseReceived(object sender, HttpResponse resp)
         {
+            if (resp == null)
+            {
+                Debug.Print("Failed to parse response");
+                return;
+            }
+            Debug.Print("==== Response received ================================");
+            Debug.Print("Status : " + resp.StatusCode);
+            Debug.Print("Reason : " + resp.Reason);
+            foreach (var item in resp.Headers)
+            {
+                var key = ((DictionaryEntry)item).Key;
+                var val = ((DictionaryEntry)item).Value;
+                Debug.Print(key + " : " + val);
+            }
+            if (resp.Body != null && resp.Body.Length > 0)
+            {
+                Debug.Print("Body:");
+                Debug.Print(resp.Body);
+            }
         }
 
         private static void WifiOnConnectionStateChanged(object sender, EventArgs args)

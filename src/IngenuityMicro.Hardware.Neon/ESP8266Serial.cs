@@ -1,4 +1,4 @@
-#define VERBOSE
+//#define VERBOSE
 using System;
 using System.Collections;
 using System.Diagnostics;

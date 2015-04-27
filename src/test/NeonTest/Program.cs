@@ -29,11 +29,11 @@ namespace NeonTest
                 Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
             }
 
-            wifi.Connect("CloudGate","Escal8shun");
+            wifi.Connect("XXX","XXX");
             wifi.EnableDebugOutput = true;
 
             var sntp = new SntpClient(wifi, "time1.google.com");
-            sntp.SetTime();
+            sntp.Start();
 
             var httpClient = new HttpClient(wifi, "www.hell.org");
             var request = httpClient.CreateRequest();
@@ -41,10 +41,16 @@ namespace NeonTest
             request.Send();
 
             bool state = true;
+            int iCounter = 0;
             while (true)
             {
                 Hardware.UserLed.Write(state);
                 state = !state;
+                if (++iCounter == 10)
+                {
+                    Debug.Print("Current UTC time : " + DateTime.UtcNow);
+                    iCounter = 0;
+                }
                 Thread.Sleep(500);
             }
         }

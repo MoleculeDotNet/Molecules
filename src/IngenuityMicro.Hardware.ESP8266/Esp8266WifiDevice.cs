@@ -37,6 +37,8 @@ namespace IngenuityMicro.Hardware.ESP8266
         private readonly WifiSocket[] _sockets = new WifiSocket[4];
         private Esp8266Serial _esp;
         private bool _enableDebugOutput;
+        // operation lock - used to protect any interaction with the esp8266 serial interface
+        private object _oplock = new object();
 
         public event WifiBootedEventHandler Booted;
         //public event WifiErrorEventHandler Error;
@@ -76,92 +78,117 @@ namespace IngenuityMicro.Hardware.ESP8266
         }
         public void Connect(string ssid, string password)
         {
-            EnsureInitialized();
+            lock (_oplock)
+            {
+                EnsureInitialized();
 
-            _esp.SendAndExpect(JoinAccessPointCommand + '"' + ssid + "\",\"" + password + '"', OK, -1);
+                _esp.SendAndExpect(JoinAccessPointCommand + '"' + ssid + "\",\"" + password + '"', OK, -1);
 
-            // Update our IP address
-            GetAddressInformation();
+                // Update our IP address
+                GetAddressInformation();
+            }
         }
 
         public void Disconnect()
         {
-            _esp.SendAndExpect(QuitAccessPointCommand, OK);
+            lock (_oplock)
+            {
+                _esp.SendAndExpect(QuitAccessPointCommand, OK);
+            }
         }
 
         public ISocket OpenSocket(string hostNameOrAddress, int portNumber, bool useTcp)
         {
-            int iSocket = -1;
-            for (int i = 0; i < _sockets.Length; ++i)
+            // We lock on sockets here - we will claim oplock in OpenSocket(int socket)
+            lock (_sockets)
             {
-                if (_sockets[i] == null)
+                int iSocket = -1;
+                for (int i = 0; i < _sockets.Length; ++i)
                 {
-                    iSocket = i;
-                    break;
+                    if (_sockets[i] == null)
+                    {
+                        iSocket = i;
+                        break;
+                    }
                 }
-            }
-            if (iSocket < 0)
-            {
-                throw new Exception("Too many sockets open - you must close one first.");
-            }
+                if (iSocket < 0)
+                {
+                    throw new Exception("Too many sockets open - you must close one first.");
+                }
 
-            var result = new WifiSocket(this, iSocket, hostNameOrAddress, portNumber, useTcp);
-            _sockets[iSocket] = result;
+                var result = new WifiSocket(this, iSocket, hostNameOrAddress, portNumber, useTcp);
+                _sockets[iSocket] = result;
 
-            return OpenSocket(iSocket);
+                return OpenSocket(iSocket);
+            }
         }
 
         internal WifiSocket OpenSocket(int socket)
         {
-            // We should get back "n,CONNECT" where n is the socket number
-            var sock = _sockets[socket];
-            int retries = 3;
-            string reply;
-            bool success = true;
-            do
+            lock (_oplock)
             {
-                success = true;
-                reply = _esp.SendCommandAndReadReply(SessionStartCommand + socket + ',' + (sock.UseTcp ? "\"TCP\",\"" : "\"UDP\",\"") + sock.Hostname + "\"," + sock.Port);
-                if (reply.ToLower().IndexOf("dns fail") != -1)
-                    success = false;  // a retriable failure
-                else if (reply.IndexOf(ConnectReply) == -1) // Some other unexpected response
+                // We should get back "n,CONNECT" where n is the socket number
+                var sock = _sockets[socket];
+                int retries = 3;
+                string reply;
+                bool success = true;
+                do
+                {
+                    success = true;
+                    reply =
+                        _esp.SendCommandAndReadReply(SessionStartCommand + socket + ',' +
+                                                     (sock.UseTcp ? "\"TCP\",\"" : "\"UDP\",\"") + sock.Hostname + "\"," +
+                                                     sock.Port);
+                    if (reply.ToLower().IndexOf("dns fail") != -1)
+                        success = false; // a retriable failure
+                    else if (reply.IndexOf(ConnectReply) == -1) // Some other unexpected response
+                        throw new FailedExpectException(SessionStartCommand, ConnectReply, reply);
+                    if (!success)
+                        Thread.Sleep(500);
+                } while (--retries > 0 && !success);
+                if (retries == 0 && !success)
+                {
+                    if (reply.IndexOf(ConnectReply) == -1)
+                        throw new DnsLookupFailedException(sock.Hostname);
                     throw new FailedExpectException(SessionStartCommand, ConnectReply, reply);
-                if (!success)
-                    Thread.Sleep(500);
-            } while (--retries > 0 && !success);
-            if (retries == 0 && !success)
-            {
-                if (reply.IndexOf(ConnectReply) == -1)
-                    throw new DnsLookupFailedException(sock.Hostname);
-                throw new FailedExpectException(SessionStartCommand, ConnectReply, reply);
+                }
+                reply = reply.Substring(0, reply.IndexOf(','));
+                if (int.Parse(reply) != socket)
+                    throw new Exception("Unexpected socket response");
+                return sock;
             }
-            reply = reply.Substring(0, reply.IndexOf(','));
-            if (int.Parse(reply) != socket)
-                throw new Exception("Unexpected socket response");
-            return sock;
         }
 
         internal void DeleteSocket(int socket)
         {
-            if (socket >= 0 && socket <= _sockets.Length)
+            lock (_sockets)
             {
-                _sockets[socket] = null;
+                if (socket >= 0 && socket <= _sockets.Length)
+                {
+                    _sockets[socket] = null;
+                }
             }
         }
 
         internal void CloseSocket(int socket)
         {
-            if (socket >= 0 && socket <= _sockets.Length)
+            lock (_oplock)
             {
-                _esp.SendAndExpect(SessionEndCommand + socket, OK);
+                if (socket >= 0 && socket <= _sockets.Length)
+                {
+                    _esp.SendAndExpect(SessionEndCommand + socket, OK);
+                }
             }
         }
 
         internal void SendPayload(int iSocket, byte[] payload)
         {
-            _esp.SendAndExpect(SendCommand + iSocket + ',' + payload.Length, OK);
-            _esp.Write(payload);
-            _esp.Find(SendCommandReply);
+            lock (_oplock)
+            {
+                _esp.SendAndExpect(SendCommand + iSocket + ',' + payload.Length, OK);
+                _esp.Write(payload);
+                _esp.Find(SendCommandReply);
+            }
         }
 
         public void SetPower(bool state)
@@ -186,24 +213,27 @@ namespace IngenuityMicro.Hardware.ESP8266
         public AccessPoint[] GetAccessPoints()
         {
             ArrayList result = new ArrayList();
-            
-            EnsureInitialized();
 
-            var response = _esp.SendAndReadUntil(ListAccessPointsCommand, OK);
-            foreach (var line in response)
+            lock (_oplock)
             {
-                var info = Unquote(line.Substring(line.IndexOf(':') + 1));
-                var tokens = info.Split(',');
-                if (tokens.Length >= 4)
+                EnsureInitialized();
+
+                var response = _esp.SendAndReadUntil(ListAccessPointsCommand, OK);
+                foreach (var line in response)
                 {
-                    var ecn = (Ecn) byte.Parse(tokens[0]);
-                    var ssid = tokens[1];
-                    var rssi = int.Parse(tokens[2]);
-                    var mac = tokens[3];
-                    bool mode = false;
-                    if (tokens.Length >= 5)
-                        mode = int.Parse(tokens[4]) != 0;
-                    result.Add(new AccessPoint(ecn, ssid, rssi, mac, mode));
+                    var info = Unquote(line.Substring(line.IndexOf(':') + 1));
+                    var tokens = info.Split(',');
+                    if (tokens.Length >= 4)
+                    {
+                        var ecn = (Ecn) byte.Parse(tokens[0]);
+                        var ssid = tokens[1];
+                        var rssi = int.Parse(tokens[2]);
+                        var mac = tokens[3];
+                        bool mode = false;
+                        if (tokens.Length >= 5)
+                            mode = int.Parse(tokens[4]) != 0;
+                        result.Add(new AccessPoint(ecn, ssid, rssi, mac, mode));
+                    }
                 }
             }
             return (AccessPoint[])result.ToArray(typeof(AccessPoint));
@@ -235,63 +265,66 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         private void BackgroundInitialize()
         {
-            bool success = false;
-            int retries = 10;
-            do
+            lock (_oplock)
             {
-                if (!_powerPin.Read())
+                bool success = false;
+                int retries = 10;
+                do
                 {
-                    Thread.Sleep(2000);
-                    SetPower(true);
-                    Thread.Sleep(2000);
-                }
-
-                // Auto-baud
-                _esp.SendCommand(AT);
-                _esp.SendCommand(AT);
-                _esp.SendCommand(AT);
-                Thread.Sleep(100);
-                try
-                {
-                    _esp.SendAndExpect(AT, OK, 2000);
-                    _esp.SendAndExpect(EchoOffCommand, OK, 2000);
-
-                    SetMuxMode(true);
-
-                    // Get the firmware version information
-                    this.Version = _esp.SendAndReadUntil(GetFirmwareVersionCommand, OK);
-
-                    // Collect the current IP address information
-                    GetAddressInformation();
-
-                    _isInitializedEvent.Set();
-
-                    if (this.Booted != null)
-                        this.Booted(this, new EventArgs());
-
-                    success = true;
-                }
-                catch (FailedExpectException fee)
-                {
-                    // If we get a busy indication, then it is still booting - don't cycle the power
-                    if (fee.Actual.IndexOf("busy")!=-1)
-                        Thread.Sleep(500);
-                    success = false;
-                }
-                catch (CommandTimeoutException)
-                {
-                    success = false;
-                    // known firmware problem. Clear the AP.
-                    _esp.SendCommand(JoinAccessPointCommand + "\"\",\"\"");
-                    if ((retries%1) == 0)
+                    if (!_powerPin.Read())
                     {
-                        SetPower(false);
+                        Thread.Sleep(2000);
+                        SetPower(true);
+                        Thread.Sleep(2000);
                     }
+
+                    // Auto-baud
+                    _esp.SendCommand(AT);
+                    _esp.SendCommand(AT);
+                    _esp.SendCommand(AT);
+                    Thread.Sleep(100);
+                    try
+                    {
+                        _esp.SendAndExpect(AT, OK, 2000);
+                        _esp.SendAndExpect(EchoOffCommand, OK, 2000);
+
+                        SetMuxMode(true);
+
+                        // Get the firmware version information
+                        this.Version = _esp.SendAndReadUntil(GetFirmwareVersionCommand, OK);
+
+                        // Collect the current IP address information
+                        GetAddressInformation();
+
+                        _isInitializedEvent.Set();
+
+                        if (this.Booted != null)
+                            this.Booted(this, new EventArgs());
+
+                        success = true;
+                    }
+                    catch (FailedExpectException fee)
+                    {
+                        // If we get a busy indication, then it is still booting - don't cycle the power
+                        if (fee.Actual.IndexOf("busy") != -1)
+                            Thread.Sleep(500);
+                        success = false;
+                    }
+                    catch (CommandTimeoutException)
+                    {
+                        success = false;
+                        // known firmware problem. Clear the AP.
+                        _esp.SendCommand(JoinAccessPointCommand + "\"\",\"\"");
+                        if ((retries%1) == 0)
+                        {
+                            SetPower(false);
+                        }
+                    }
+                } while (!success && --retries > 0);
+                if (!success)
+                {
+                    throw new CommandTimeoutException("initialization failed");
                 }
-            } while (!success && --retries > 0);
-            if (!success)
-            {
-                throw new CommandTimeoutException("initialization failed");
             }
         }
 
@@ -302,6 +335,7 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         private void GetAddressInformation()
         {
+            // private - no oplock required - always called from within oplock
             var info = _esp.SendAndReadUntil("AT+CIFSR", OK);
             foreach (var line in info)
             {
@@ -320,7 +354,10 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         private void SetMuxMode(bool enableMux)
         {
-            _esp.SendAndExpect(SetMuxModeCommand + (enableMux ? '1' : '0'), OK);
+            lock (_oplock)
+            {
+                _esp.SendAndExpect(SetMuxModeCommand + (enableMux ? '1' : '0'), OK);
+            }
         }
 
         private string Unquote(string quotedString)

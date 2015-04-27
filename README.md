@@ -18,7 +18,8 @@ And more to come...
 
 ## How to use these projects
 Mostly, this code is here for your reference. To build Molecule.Net projects, you should use Visual Studio or MonoDevelop
-and install the Molecule.Net packages from Nuget.  Search nuget for "IngenuityMicro" either in the package manager
+and install the Microsoft .Net Micro Framework 4.3 SDK and then install the Molecule.Net packages from Nuget.
+Search nuget for "IngenuityMicro" either in the package manager
 or nuget.org and you will get a list of all the current packages. You can install a package from the package manager
 GUI or package manager command-line interface. In some cases, you may have to enable the option for searching "Prerelease" nuget packages
 if we haven't released a production version yet or if you want more recent (and consequently less tested

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.SPOT;
 
-namespace IngenuityMicro.Hardware.Neon
+namespace IngenuityMicro.Hardware.ESP8266
 {
     public class FailedExpectException : Exception
     {
@@ -47,5 +47,18 @@ namespace IngenuityMicro.Hardware.Neon
         }
 
         public string Command { get; private set; }
+    }
+
+    public class DnsLookupFailedException : Exception
+    {
+        private readonly string _hostname;
+
+        public DnsLookupFailedException(string hostname)
+            : base("Dns lookup for " + hostname + " failed.")
+        {
+            _hostname = hostname;
+        }
+
+        public string Hostname { get {  return _hostname; } }
     }
 }

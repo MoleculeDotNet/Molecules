@@ -1,24 +1,24 @@
 using System;
 using System.Collections;
-using IngenuityMicro.Net;
-using IngenuityMicro.Hardware.Oxygen;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using System.IO.Ports;
 using System.Net;
 using System.Threading;
 
+using IngenuityMicro.Net;
 
-namespace IngenuityMicro.Hardware.Neon
+namespace IngenuityMicro.Hardware.ESP8266
 {
     public delegate void WifiBootedEventHandler(object sender, EventArgs args);
     public delegate void WifiErrorEventHandler(object sender, EventArgs args);
     public delegate void WifiConnectionStateEventHandler(object sender, EventArgs args);
 
-    public class WifiDevice : IWifiAdapter, IDisposable
+    public class Esp8266WifiDevice : IWifiAdapter, IDisposable
     {
         public const string AT = "AT";
         public const string OK = "OK";
+        public const string EchoOffCommand = "ATE0";
         public const string GetFirmwareVersionCommand = "AT+GMR";
         public const string GetAddressInformationCommand = "AT+CIFSR";
         public const string ListAccessPointsCommand = "AT+CWLAP";
@@ -26,6 +26,7 @@ namespace IngenuityMicro.Hardware.Neon
         public const string QuitAccessPointCommand = "AT+CWQAP";
         public const string SetMuxModeCommand = "AT+CIPMUX=";
         public const string SessionStartCommand = "AT+CIPSTART=";
+        public const string SessionEndCommand = "AT+CIPCLOSE=";
         public const string LinkedReply = "Linked";
         public const string SendCommand = "AT+CIPSEND=";
         public const string SendCommandReply = "SEND OK";
@@ -33,29 +34,30 @@ namespace IngenuityMicro.Hardware.Neon
         public const string ErrorReply = "ERROR";
 
         private readonly ManualResetEvent _isInitializedEvent = new ManualResetEvent(false);
-        private readonly NeonSocket[] _sockets = new NeonSocket[4];
-        private ESP8266Serial _neon;
+        private readonly WifiSocket[] _sockets = new WifiSocket[4];
+        private Esp8266Serial _esp;
+        private bool _enableDebugOutput;
 
         public event WifiBootedEventHandler Booted;
         //public event WifiErrorEventHandler Error;
         //public event WifiConnectionStateEventHandler ConnectionStateChanged;
-        
-        public WifiDevice() : this("COM2")
-        {
-        }
 
-        public WifiDevice(string comPortName)
+        private OutputPort _powerPin = null;
+        private OutputPort _resetPin = null;
+
+        public Esp8266WifiDevice(SerialPort port, OutputPort powerPin, OutputPort resetPin)
         {
-            var port = new SerialPort(comPortName, 115200, Parity.None, 8, StopBits.One);
+            _powerPin = powerPin;
+            _resetPin = resetPin;
             Initialize(port);
         }
 
         private void Initialize(SerialPort port)
         {
-            _neon = new ESP8266Serial(port);
-            _neon.DataReceived += NeonOnDataReceived;
-            _neon.SocketClosed += NeonOnSocketClosed;
-            _neon.Start();
+            _esp = new Esp8266Serial(port);
+            _esp.DataReceived += OnDataReceived;
+            _esp.SocketClosed += OnSocketClosed;
+            _esp.Start();
             new Thread(BackgroundInitialize).Start();
         }
 
@@ -63,11 +65,20 @@ namespace IngenuityMicro.Hardware.Neon
         {
         }
 
+        public bool EnableDebugOutput
+        {
+            get { return _enableDebugOutput; }
+            set 
+            { 
+                _enableDebugOutput = value;
+                _esp.EnableDebugOutput = value;
+            }
+        }
         public void Connect(string ssid, string password)
         {
             EnsureInitialized();
 
-            _neon.SendAndExpect(JoinAccessPointCommand + '"' + ssid + "\",\"" + password + '"', OK, -1);
+            _esp.SendAndExpect(JoinAccessPointCommand + '"' + ssid + "\",\"" + password + '"', OK, -1);
 
             // Update our IP address
             GetAddressInformation();
@@ -75,7 +86,7 @@ namespace IngenuityMicro.Hardware.Neon
 
         public void Disconnect()
         {
-            _neon.SendAndExpect(QuitAccessPointCommand, OK);
+            _esp.SendAndExpect(QuitAccessPointCommand, OK);
         }
 
         public ISocket OpenSocket(string hostNameOrAddress, int portNumber, bool useTcp)
@@ -94,19 +105,36 @@ namespace IngenuityMicro.Hardware.Neon
                 throw new Exception("Too many sockets open - you must close one first.");
             }
 
-            var result = new NeonSocket(this, iSocket, hostNameOrAddress, portNumber, useTcp);
+            var result = new WifiSocket(this, iSocket, hostNameOrAddress, portNumber, useTcp);
             _sockets[iSocket] = result;
 
             return OpenSocket(iSocket);
         }
 
-        internal NeonSocket OpenSocket(int socket)
+        internal WifiSocket OpenSocket(int socket)
         {
             // We should get back "n,CONNECT" where n is the socket number
             var sock = _sockets[socket];
-            var reply = _neon.SendCommandAndReadReply(SessionStartCommand + socket + ',' + (sock.UseTcp ? "\"TCP\",\"" : "\"UDP\",\"") + sock.Hostname + "\"," + sock.Port);
-            if (reply.IndexOf(ConnectReply) == -1)
+            int retries = 3;
+            string reply;
+            bool success = true;
+            do
+            {
+                success = true;
+                reply = _esp.SendCommandAndReadReply(SessionStartCommand + socket + ',' + (sock.UseTcp ? "\"TCP\",\"" : "\"UDP\",\"") + sock.Hostname + "\"," + sock.Port);
+                if (reply.ToLower().IndexOf("dns fail") != -1)
+                    success = false;  // a retriable failure
+                else if (reply.IndexOf(ConnectReply) == -1) // Some other unexpected response
+                    throw new FailedExpectException(SessionStartCommand, ConnectReply, reply);
+                if (!success)
+                    Thread.Sleep(500);
+            } while (--retries > 0 && !success);
+            if (retries == 0 && !success)
+            {
+                if (reply.IndexOf(ConnectReply) == -1)
+                    throw new DnsLookupFailedException(sock.Hostname);
                 throw new FailedExpectException(SessionStartCommand, ConnectReply, reply);
+            }
             reply = reply.Substring(0, reply.IndexOf(','));
             if (int.Parse(reply) != socket)
                 throw new Exception("Unexpected socket response");
@@ -125,19 +153,20 @@ namespace IngenuityMicro.Hardware.Neon
         {
             if (socket >= 0 && socket <= _sockets.Length)
             {
+                _esp.SendAndExpect(SessionEndCommand + socket, OK);
             }
         }
 
         internal void SendPayload(int iSocket, byte[] payload)
         {
-            _neon.SendAndExpect(SendCommand + iSocket + ',' + payload.Length, OK);
-            _neon.Write(payload);
-            _neon.Find(SendCommandReply);
+            _esp.SendAndExpect(SendCommand + iSocket + ',' + payload.Length, OK);
+            _esp.Write(payload);
+            _esp.Find(SendCommandReply);
         }
 
         public void SetPower(bool state)
         {
-            Oxygen.Hardware.EnableRfPower(state);
+            _powerPin.Write(state);
         }
 
         private IPAddress _address = IPAddress.Parse("0.0.0.0");
@@ -160,7 +189,7 @@ namespace IngenuityMicro.Hardware.Neon
             
             EnsureInitialized();
 
-            var response = _neon.SendAndReadUntil(ListAccessPointsCommand, OK);
+            var response = _esp.SendAndReadUntil(ListAccessPointsCommand, OK);
             foreach (var line in response)
             {
                 var info = Unquote(line.Substring(line.IndexOf(':') + 1));
@@ -180,7 +209,7 @@ namespace IngenuityMicro.Hardware.Neon
             return (AccessPoint[])result.ToArray(typeof(AccessPoint));
         }
 
-        private void NeonOnDataReceived(object sender, byte[] stream, int channel)
+        private void OnDataReceived(object sender, byte[] stream, int channel)
         {
             if (_sockets[channel] != null)
             {
@@ -192,7 +221,7 @@ namespace IngenuityMicro.Hardware.Neon
             }
         }
 
-        private void NeonOnSocketClosed(object sender, int channel)
+        private void OnSocketClosed(object sender, int channel)
         {
             if (_sockets[channel] != null)
             {
@@ -210,7 +239,7 @@ namespace IngenuityMicro.Hardware.Neon
             int retries = 10;
             do
             {
-                if (!Oxygen.Hardware.RfPower.Read())
+                if (!_powerPin.Read())
                 {
                     Thread.Sleep(2000);
                     SetPower(true);
@@ -218,18 +247,19 @@ namespace IngenuityMicro.Hardware.Neon
                 }
 
                 // Auto-baud
-                _neon.SendCommand(AT);
-                _neon.SendCommand(AT);
-                _neon.SendCommand(AT);
+                _esp.SendCommand(AT);
+                _esp.SendCommand(AT);
+                _esp.SendCommand(AT);
                 Thread.Sleep(100);
                 try
                 {
-                    _neon.SendAndExpect(AT, OK, 2000);
+                    _esp.SendAndExpect(AT, OK, 2000);
+                    _esp.SendAndExpect(EchoOffCommand, OK, 2000);
 
                     SetMuxMode(true);
 
                     // Get the firmware version information
-                    this.Version = _neon.SendAndReadUntil(GetFirmwareVersionCommand, OK);
+                    this.Version = _esp.SendAndReadUntil(GetFirmwareVersionCommand, OK);
 
                     // Collect the current IP address information
                     GetAddressInformation();
@@ -252,10 +282,10 @@ namespace IngenuityMicro.Hardware.Neon
                 {
                     success = false;
                     // known firmware problem. Clear the AP.
-                    _neon.SendCommand(JoinAccessPointCommand + "\"\",\"\"");
+                    _esp.SendCommand(JoinAccessPointCommand + "\"\",\"\"");
                     if ((retries%1) == 0)
                     {
-                        Oxygen.Hardware.EnableRfPower(false);
+                        SetPower(false);
                     }
                 }
             } while (!success && --retries > 0);
@@ -272,7 +302,7 @@ namespace IngenuityMicro.Hardware.Neon
 
         private void GetAddressInformation()
         {
-            var info = _neon.SendAndReadUntil("AT+CIFSR", OK);
+            var info = _esp.SendAndReadUntil("AT+CIFSR", OK);
             foreach (var line in info)
             {
                 if (line.IndexOf("STAIP") != -1)
@@ -290,7 +320,7 @@ namespace IngenuityMicro.Hardware.Neon
 
         private void SetMuxMode(bool enableMux)
         {
-            _neon.SendAndExpect(SetMuxModeCommand + (enableMux ? '1' : '0'), OK);
+            _esp.SendAndExpect(SetMuxModeCommand + (enableMux ? '1' : '0'), OK);
         }
 
         private string Unquote(string quotedString)

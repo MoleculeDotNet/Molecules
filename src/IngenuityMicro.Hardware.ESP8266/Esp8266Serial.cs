@@ -1,15 +1,14 @@
-//#define VERBOSE
 using System;
 using System.Collections;
-using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using Microsoft.SPOT;
+using IngenuityMicro.Utility;
 
-namespace IngenuityMicro.Hardware.Neon
+namespace IngenuityMicro.Hardware.ESP8266
 {
-    internal class ESP8266Serial
+    internal class Esp8266Serial
     {
         public delegate void DataReceivedHandler(object sender, byte[] stream, int channel);
         public delegate void SocketClosedHandler(object sender, int channel);
@@ -32,8 +31,9 @@ namespace IngenuityMicro.Hardware.Neon
         private int _cbStream = 0;
         private int _receivingOnChannel;
         private readonly ManualResetEvent _noStreamRead = new ManualResetEvent(true);
+        private bool _enableDebugOutput;
 
-        public ESP8266Serial(SerialPort port)
+        public Esp8266Serial(SerialPort port)
         {
             this.CommandTimeout = DefaultCommandTimeout;
             _port = port;
@@ -47,6 +47,12 @@ namespace IngenuityMicro.Hardware.Neon
         }
 
         public int CommandTimeout { get; set; }
+
+        public bool EnableDebugOutput
+        {
+            get { return _enableDebugOutput; }
+            set { _enableDebugOutput = value; }
+        }
 
         public void SendCommand(string send)
         {
@@ -284,9 +290,8 @@ namespace IngenuityMicro.Hardware.Neon
 
         private void WriteCommand(string txt)
         {
-#if VERBOSE
-            Dbg("Sent: " + txt);
-#endif
+            if (_enableDebugOutput)
+                Log("Sent command : " + txt);
             this.Write(txt + "\r\n");
         }
 
@@ -358,9 +363,8 @@ namespace IngenuityMicro.Hardware.Neon
                                 _buffer.Skip(1);
                                 if (line != null && line.Length > 0)
                                 {
-#if VERBOSE
-                                    Dbg("Received Line : " + line);
-#endif
+                                    if (_enableDebugOutput)
+                                        Log("Received : " + line);
                                     var idxClosed = line.IndexOf(",CLOSED");
                                     if (idxClosed != -1)
                                     {
@@ -392,9 +396,8 @@ namespace IngenuityMicro.Hardware.Neon
                                     _cbStream = int.Parse(tokens[2]);
                                     // block anything that would interfere with the stream read - this is used in the DiscardBufferedInput call that preceeds the sending of every command
                                     _noStreamRead.Reset();
-#if VERBOSE
-                                    Dbg("Reading a stream of " + _cbStream + " bytes for channel " + _receivingOnChannel);
-#endif
+                                    if (_enableDebugOutput)
+                                        Log("Reading a stream of " + _cbStream + " bytes for channel " + _receivingOnChannel);
                                 }
                             }
                             // What next?
@@ -424,23 +427,14 @@ namespace IngenuityMicro.Hardware.Neon
         {
             lock (_responseQueueLock)
             {
-#if VERBOSE
-                Dbg("Enqueue Line : " + line);
-#endif
                 _responseQueue.Add(line);
                 _responseReceived.Set();
             }
         }
 
-        [Conditional("DEBUG")]
-        private static void Dbg(string msg)
+        private static void Log(string msg)
         {
-#if MF_FRAMEWORK
             Debug.Print(msg);
-#else
-            Debug.WriteLine(msg);
-#endif
         }
-
     }
 }

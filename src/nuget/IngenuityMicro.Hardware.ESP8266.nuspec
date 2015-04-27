@@ -1,25 +1,29 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>IngenuityMicro.Utility</id>
-    <title>Utility functions used by many IngenuityMicro packages</title>
+    <id>IngenuityMicro.Hardware.ESP8266</id>
+    <title>.Net Micro Framework Managed driver for ESP8266 wifi</title>
     <version>0.3.0-beta</version>
     <authors>Martin Calsyn, Justin Wilson</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
-    <projectUrl>https://github.com/MoleculeDotNet/Oxygen</projectUrl>
+    <projectUrl>https://github.com/MoleculeDotNet/Molecules</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <summary>.Net Micro Framework Utilities to support other IngenuityMicro Molecule.Net packages</summary>
+    <summary>This package includes a .Net Micro Framework Managed driver for the ESP8266 wifi</summary>
     <description>
-      This library provides .Net Micro Framework utilitiy support for other IngenuityMicro packages
+      This library provides .Net Micro Framework support for the ESP8266 family of serial-interface wifi boards
     </description>
     <releaseNotes>Initial release</releaseNotes>
     <copyright>Copyright 2015 IngenuityMicro</copyright>
-    <tags>NETMF MicroFramework IoT Molecule.Net</tags>
+    <tags>NETMF MicroFramework IoT Molecule.Net ESP8266</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="Microsoft.SPOT.Native" />
       <frameworkAssembly assemblyName="Microsoft.SPOT.Hardware" />
     </frameworkAssemblies>
+    <dependencies>
+      <dependency id="IngenuityMicro.Net" />
+      <dependency id="IngenuityMicro.Utility" />
+    </dependencies>
   </metadata>
 </package>

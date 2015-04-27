@@ -3,11 +3,11 @@
   <metadata>
     <id>IngenuityMicro.Hardware.Neon</id>
     <title>Support for the IngenuityMicro Molecule.Net Neon Wifi board</title>
-    <version>0.2.0-beta</version>
+    <version>0.3.0-beta</version>
     <authors>Martin Calsyn, Justin Wilson</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
-    <projectUrl>https://github.com/MoleculeDotNet/Oxygen</projectUrl>
+    <projectUrl>https://github.com/MoleculeDotNet/Molecules</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>.Net Micro Framework support for the IngenuityMicro Neon wifi board</summary>
@@ -22,8 +22,8 @@
       <frameworkAssembly assemblyName="Microsoft.SPOT.Hardware" />
     </frameworkAssemblies>
     <dependencies>
+      <dependency id="IngenuityMicro.Hardware.ESP8266" />
       <dependency id="IngenuityMicro.Hardware.Oxygen" />
-      <dependency id="IngenuityMicro.Net" />
     </dependencies>
   </metadata>
 </package>

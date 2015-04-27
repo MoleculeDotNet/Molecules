@@ -1,24 +1,19 @@
 using System;
 using System.Collections;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.SPOT;
 using IngenuityMicro.Hardware.Oxygen;
 using IngenuityMicro.Hardware.Neon;
 using System.Threading;
 using IngenuityMicro.Net;
-//using Microsoft.SPOT.Cryptoki;
-using Microsoft.SPOT.Hardware;
 
 namespace NeonTest
 {
     public class Program
     {
-        private static HashAlgorithm _hash = new HashAlgorithm(HashAlgorithmType.SHA256);
-
         public static void Main()
         {
-            var wifi = new WifiDevice();
+            var wifi = new NeonWifiDevice();
             wifi.Booted += WifiOnBooted;  // or you can wait on the wifi.IsInitializedEvent
             //wifi.Error += WifiOnError;
             //wifi.ConnectionStateChanged += WifiOnConnectionStateChanged;
@@ -35,36 +30,15 @@ namespace NeonTest
             }
 
             wifi.Connect("CloudGate","Escal8shun");
+            wifi.EnableDebugOutput = true;
 
-            //var socket = wifi.OpenSocket("216.162.199.110", 80, true);
-            //socket.DataReceived += (sender, args) =>
-            //{
-            //    Debug.Print("response received : " + new string(Encoding.UTF8.GetChars(args.Data)));
-            //};
-            //socket.SocketClosed += (sender, args) =>
-            //{
-            //    Debug.Print("Socket closed");
-            //};
-            //socket.Send("GET / HTTP/1.0\r\n\r\n");
+            var sntp = new SntpClient(wifi, "time1.google.com");
+            sntp.SetTime();
 
-            //var httpClient = new HttpClient(wifi, "216.162.199.110");
-            //var request = httpClient.CreateRequest();
-            //request.ResponseReceived += HttpResponseReceived;
-            //request.Send();
-
-            // Azure test
-            Debug.Print("DATE : " + CreateStorageKeyLite("foo"));
-
-            //Convert.UseRFC4648Encoding = true;
-            //var endpoint = "http://molecule.table.core.windows.net/";
-            //var table = "readings";
-            //var key = "6YgFBE1UKKRd7yoGtzeGvrtgFF9UbI5WvPIm/b4dhg1T7Z3IcQZnFoAYPmi4E2g+eo+otfuEp1fnODSLXoYN0Q==";
-
-            //var httpClient = new HttpClient(wifi, "216.162.199.110");
-            //var request = httpClient.CreateRequest(HttpVerb.POST, endpoint + table);
-            //request.Headers.Add("Authorization","");
-
-
+            var httpClient = new HttpClient(wifi, "www.hell.org");
+            var request = httpClient.CreateRequest();
+            request.ResponseReceived += HttpResponseReceived;
+            request.Send();
 
             bool state = true;
             while (true)
@@ -100,25 +74,18 @@ namespace NeonTest
 
         private static void WifiOnConnectionStateChanged(object sender, EventArgs args)
         {
+            Debug.Print("Connection (association) state has changed");
         }
 
         private static void WifiOnError(object sender, EventArgs args)
         {
+            Debug.Print("---- WIFI ERROR ----------------------");
         }
 
         private static void WifiOnBooted(object sender, EventArgs args)
         {
+            Debug.Print("Wifi booted");
         }
 
-        private static string CreateStorageKeyLite(string resource)
-        {
-            return DateTime.UtcNow.ToString("r") + "\n" + resource;
-        }
-
-        private static string SignStorageKey(string key)
-        {
-            var hashBytes = _hash.ComputeHash(Encoding.UTF8.GetBytes(key));
-            return Convert.ToBase64String(hashBytes);
-        }
     }
 }

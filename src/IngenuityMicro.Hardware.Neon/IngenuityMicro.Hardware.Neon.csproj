@@ -7,7 +7,7 @@
     <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DA09F76E-1655-442D-A3AC-3892FA963677}</ProjectGuid>
+    <ProjectGuid>{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
   </PropertyGroup>
@@ -29,23 +29,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AccessPoint.cs" />
-    <Compile Include="CircularBuffer.cs" />
-    <Compile Include="Exceptions.cs" />
-    <Compile Include="Ecn.cs" />
-    <Compile Include="ESP8266Serial.cs" />
-    <Compile Include="NeonSocket.cs" />
-    <Compile Include="WifiDevice.cs" />
+    <Compile Include="NeonWifiDevice.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Hardware" />
     <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
     <Reference Include="Microsoft.SPOT.Native" />
-    <Reference Include="Microsoft.SPOT.Net" />
-    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IngenuityMicro.Hardware.ESP8266\IngenuityMicro.Hardware.ESP8266.csproj">
+      <Project>{DA09F76E-1655-442D-A3AC-3892FA963677}</Project>
+      <Name>IngenuityMicro.Hardware.ESP8266</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IngenuityMicro.Hardware.Oxygen\IngenuityMicro.Hardware.Oxygen.csproj">
       <Project>{66B08BE0-EF22-47E3-899D-E58E9E952B9F}</Project>
       <Name>IngenuityMicro.Hardware.Oxygen</Name>

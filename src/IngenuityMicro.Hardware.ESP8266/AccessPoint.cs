@@ -2,7 +2,7 @@ using System;
 using IngenuityMicro.Net;
 using Microsoft.SPOT;
 
-namespace IngenuityMicro.Hardware.Neon
+namespace IngenuityMicro.Hardware.ESP8266
 {
     public class AccessPoint
     {

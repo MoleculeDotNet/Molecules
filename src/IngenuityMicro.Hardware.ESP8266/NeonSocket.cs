@@ -3,11 +3,11 @@ using Microsoft.SPOT;
 using System.Text;
 using IngenuityMicro.Net;
 
-namespace IngenuityMicro.Hardware.Neon
+namespace IngenuityMicro.Hardware.ESP8266
 {
-    public class NeonSocket : ISocket, IDisposable
+    public class WifiSocket : ISocket, IDisposable
     {
-        private readonly WifiDevice _parent;
+        private readonly Esp8266WifiDevice _parent;
         private readonly string _hostname;
         private readonly int _port;
         private readonly bool _fTcp;
@@ -16,7 +16,7 @@ namespace IngenuityMicro.Hardware.Neon
         public event SocketReceivedDataEventHandler DataReceived;
         public event SocketClosedEventHandler SocketClosed;
 
-        internal NeonSocket(WifiDevice device, int iSocket, string hostname, int port, bool fTcp)
+        internal WifiSocket(Esp8266WifiDevice device, int iSocket, string hostname, int port, bool fTcp)
         {
             _parent = device;
             _iSocket = iSocket;
@@ -33,6 +33,14 @@ namespace IngenuityMicro.Hardware.Neon
 
         public void Dispose()
         {
+            try
+            {
+                this.Close();
+            }
+            catch (Exception)
+            {
+                // ignore exceptions
+            }
             if (_iSocket != -1)
             {
                 _parent.DeleteSocket(_iSocket);

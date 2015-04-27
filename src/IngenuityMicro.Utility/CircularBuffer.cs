@@ -3,9 +3,9 @@ using System.Collections;
 using System.Threading;
 using Microsoft.SPOT;
 
-namespace IngenuityMicro.Hardware.Neon
+namespace IngenuityMicro.Utility
 {
-    internal class CircularBuffer : ICollection
+    public class CircularBuffer : ICollection
     {
         // Capacity growth multiplier and constant. Capacity grows as _capacity * _growM + _growC
         private readonly int _growM;

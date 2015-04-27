@@ -37,7 +37,10 @@ namespace IngenuityMicro.Hardware.ESP8266
         private readonly WifiSocket[] _sockets = new WifiSocket[4];
         private Esp8266Serial _esp;
         private bool _enableDebugOutput;
+        private bool _enableVerboseOutput;
+
         // operation lock - used to protect any interaction with the esp8266 serial interface
+        //   from being trampled on by another operation
         private object _oplock = new object();
 
         public event WifiBootedEventHandler Booted;
@@ -70,10 +73,20 @@ namespace IngenuityMicro.Hardware.ESP8266
         public bool EnableDebugOutput
         {
             get { return _enableDebugOutput; }
-            set 
-            { 
+            set
+            {
                 _enableDebugOutput = value;
                 _esp.EnableDebugOutput = value;
+            }
+        }
+
+        public bool EnableVerboseOutput
+        {
+            get { return _enableVerboseOutput; }
+            set
+            {
+                _enableVerboseOutput = value;
+                _esp.EnableVerboseOutput = value;
             }
         }
 

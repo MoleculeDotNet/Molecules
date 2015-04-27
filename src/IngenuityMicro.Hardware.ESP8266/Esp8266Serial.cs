@@ -32,6 +32,7 @@ namespace IngenuityMicro.Hardware.ESP8266
         private int _receivingOnChannel;
         private readonly ManualResetEvent _noStreamRead = new ManualResetEvent(true);
         private bool _enableDebugOutput;
+        private bool _enableVerboseOutput;
 
         public Esp8266Serial(SerialPort port)
         {
@@ -52,6 +53,12 @@ namespace IngenuityMicro.Hardware.ESP8266
         {
             get { return _enableDebugOutput; }
             set { _enableDebugOutput = value; }
+        }
+
+        public bool EnableVerboseOutput
+        {
+            get { return _enableVerboseOutput; }
+            set { _enableVerboseOutput = value; }
         }
 
         public void SendCommand(string send)
@@ -244,24 +251,10 @@ namespace IngenuityMicro.Hardware.ESP8266
             byte[] received = new byte[arraySize];
 
             _port.Read(received, 0, arraySize);
+            if (_enableVerboseOutput)
+                Dump("RECV:", received);
 
             return received;
-        }
-
-        /// <summary>
-        /// Reads all immediately available bytes, based on the encoding, in both the stream and the input buffer of the SerialPort object.
-        /// </summary>
-        /// <returns>String</returns>
-        private string ReadExisting()
-        {
-            try
-            {
-                return new string(Encoding.UTF8.GetChars(this.ReadExistingBinary()));
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
         }
 
         private void DiscardBufferedInput()
@@ -285,6 +278,8 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         public void Write(byte[] payload)
         {
+            if (_enableVerboseOutput)
+                Dump("SEND:", payload);
             _port.Write(payload, 0, payload.Length);
         }
 
@@ -326,6 +321,10 @@ namespace IngenuityMicro.Hardware.ESP8266
                                 var eat = System.Math.Min(_buffer.Size, _cbStream);
                                 _stream.Put(_buffer.Get(eat));
                                 _cbStream -= eat;
+                                if (_enableVerboseOutput)
+                                {
+                                    Debug.Print("STREAM: Copied " + eat + " characters to stream. Buffer contains:" + _buffer.Size + " Stream contains : " + _stream.Size + " Still need:" + _cbStream);
+                                }
                             }
                             // If we have fulfilled the stream request, then dispatch the received data to the datareceived handler
                             if (_cbStream == 0)
@@ -349,60 +348,64 @@ namespace IngenuityMicro.Hardware.ESP8266
                             }
                         }
 
-                        // process whatever is left in the buffer (after fulfilling any stream requests)
-                        var idxNewline = _buffer.IndexOf(0x0A);
-                        var idxIPD = _buffer.IndexOf(_ipdSequence);
-
-                        while ((idxNewline != -1 || idxIPD != -1) && _cbStream == 0)
+                        if (_cbStream == 0)
                         {
-                            string line = "";
-                            if (idxIPD == -1 || idxNewline < idxIPD)
-                            {
-                                line = ConvertToString(_buffer.Get(idxNewline));
-                                // eat the newline too
-                                _buffer.Skip(1);
-                                if (line != null && line.Length > 0)
-                                {
-                                    if (_enableDebugOutput)
-                                        Log("Received : " + line);
-                                    var idxClosed = line.IndexOf(",CLOSED");
-                                    if (idxClosed != -1)
-                                    {
-                                        // Handle socket-closed notification
-                                        var channel = int.Parse(line.Substring(0, idxClosed));
-                                        if (this.SocketClosed != null)
-                                            this.SocketClosed(this, channel);
-                                    }
-                                    else
-                                        EnqueueLine(line);
-                                }
-                            }
-                            else // idxIPD found before newline
-                            {
-                                // find the colon which ends the data-stream introducer
-                                var idxColon = _buffer.IndexOf(0x3A);
-                                // we did not get the full introducer - we have to wait for more chars to come in
-                                if (idxColon == -1)
-                                    break;
-                                // Convert the introducer
-                                _buffer.Skip(idxIPD);
-                                line = ConvertToString(_buffer.Get(idxColon - idxIPD));
-                                _buffer.Skip(1); // eat the colon
+                            // process whatever is left in the buffer (after fulfilling any stream requests)
+                            var idxNewline = _buffer.IndexOf(0x0A);
+                            var idxIPD = _buffer.IndexOf(_ipdSequence);
 
-                                if (line != null && line.Length > 0)
+                            while ((idxNewline != -1 || idxIPD != -1) && _cbStream == 0)
+                            {
+                                string line = "";
+                                if (idxIPD == -1 || idxNewline < idxIPD)
                                 {
-                                    var tokens = line.Split(',');
-                                    _receivingOnChannel = int.Parse(tokens[1]);
-                                    _cbStream = int.Parse(tokens[2]);
-                                    // block anything that would interfere with the stream read - this is used in the DiscardBufferedInput call that preceeds the sending of every command
-                                    _noStreamRead.Reset();
-                                    if (_enableDebugOutput)
-                                        Log("Reading a stream of " + _cbStream + " bytes for channel " + _receivingOnChannel);
+                                    line = ConvertToString(_buffer.Get(idxNewline));
+                                    // eat the newline too
+                                    _buffer.Skip(1);
+                                    if (line != null && line.Length > 0)
+                                    {
+                                        if (_enableDebugOutput)
+                                            Log("Received : " + line);
+                                        var idxClosed = line.IndexOf(",CLOSED");
+                                        if (idxClosed != -1)
+                                        {
+                                            // Handle socket-closed notification
+                                            var channel = int.Parse(line.Substring(0, idxClosed));
+                                            if (this.SocketClosed != null)
+                                                this.SocketClosed(this, channel);
+                                        }
+                                        else
+                                            EnqueueLine(line);
+                                    }
                                 }
+                                else // idxIPD found before newline
+                                {
+                                    // find the colon which ends the data-stream introducer
+                                    var idxColon = _buffer.IndexOf(0x3A);
+                                    // we did not get the full introducer - we have to wait for more chars to come in
+                                    if (idxColon == -1)
+                                        break;
+                                    // Convert the introducer
+                                    _buffer.Skip(idxIPD);
+                                    line = ConvertToString(_buffer.Get(idxColon - idxIPD));
+                                    _buffer.Skip(1); // eat the colon
+
+                                    if (line != null && line.Length > 0)
+                                    {
+                                        var tokens = line.Split(',');
+                                        _receivingOnChannel = int.Parse(tokens[1]);
+                                        _cbStream = int.Parse(tokens[2]);
+                                        // block anything that would interfere with the stream read - this is used in the DiscardBufferedInput call that preceeds the sending of every command
+                                        _noStreamRead.Reset();
+                                        if (_enableDebugOutput)
+                                            Log("Reading a stream of " + _cbStream + " bytes for channel " +
+                                                _receivingOnChannel);
+                                    }
+                                }
+                                // What next?
+                                idxNewline = _buffer.IndexOf(0x0A);
+                                idxIPD = _buffer.IndexOf(_ipdSequence);
                             }
-                            // What next?
-                            idxNewline = _buffer.IndexOf(0x0A);
-                            idxIPD = _buffer.IndexOf(_ipdSequence);
                         }
                     } while (_cbStream > 0 && _buffer.Size > 0);
                 }
@@ -435,6 +438,50 @@ namespace IngenuityMicro.Hardware.ESP8266
         private static void Log(string msg)
         {
             Debug.Print(msg);
+        }
+
+        private static void Dump(string tag, byte[] data)
+        {
+            StringBuilder sbLeft = new StringBuilder();
+            StringBuilder sbRight = new StringBuilder();
+            sbLeft.Append(tag);
+
+            // round up the length to make for pretty output
+            var length = (data.Length + 15) / 16 * 16;
+            var actualLen = data.Length;
+            for (int i = 0 ; i < length ; ++i)
+            {
+                if (i < actualLen)
+                {
+                    var b = data[i];
+                    sbLeft.Append(b.ToHex() + ' ');
+                    if (b > 32 && b < 127)
+                        sbRight.Append((char) b);
+                    else
+                        sbRight.Append('.');
+                }
+                else
+                {
+                    sbLeft.Append("   ");
+                    sbRight.Append(' ');
+                }
+                if ((i + 1) % 8 == 0)
+                    sbLeft.Append("  ");
+                if ((i + 1) % 16 == 0)
+                {
+                    sbLeft.Append(sbRight);
+                    Debug.Print(sbLeft.ToString());
+                    sbLeft.Clear();
+                    sbRight.Clear();
+                    for (var j = 0; j < tag.Length; ++j)
+                        sbLeft.Append(' ');
+                }
+            }
+            if (sbRight.Length > 0)
+            {
+                sbLeft.Append(sbRight + "  ");
+                Debug.Print(sbLeft.ToString());
+            }
         }
     }
 }

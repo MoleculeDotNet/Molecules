@@ -99,7 +99,7 @@ namespace IngenuityMicro.Net
 
         internal void SendRequest(HttpRequest req)
         {
-            if (_activeRequest!=null)
+            if (_activeRequest != null)
                 throw new InvalidOperationException("A request is already outstanding");
             _activeRequest = req;
 

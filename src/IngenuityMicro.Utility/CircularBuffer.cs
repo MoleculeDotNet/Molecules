@@ -108,6 +108,10 @@ namespace IngenuityMicro.Utility
         /// <returns>Offset of the first match, or -1 if not found</returns>
         public int IndexOf(byte[] seq)
         {
+            // can't have a match, so don't bother searching
+            if (_size < seq.Length)
+                return -1;
+
             int iOffsetFirst = -1;  // offset of first matched char
             int idxFirst = -1; // index of first matched char
 
@@ -186,7 +190,7 @@ namespace IngenuityMicro.Utility
 
             if (_tail == _capacity)
                 _tail = 0;
-            _buffer[_tail] = b;
+            _buffer[_tail++] = b;
             _size = _size + 1;
         }
 
@@ -202,7 +206,12 @@ namespace IngenuityMicro.Utility
 
         public void Skip(int count)
         {
+            if (count > _size)
+                throw new ArgumentOutOfRangeException("count", "Skip count:" + count + " Size:" + _size);
+
             _head += count;
+            _size -= count;
+
             if (_head >= _capacity)
                 _head -= _capacity;
         }
@@ -221,6 +230,8 @@ namespace IngenuityMicro.Utility
 
         public int Get(byte[] dest, int offset, int count)
         {
+            if (count > _size)
+                throw new ArgumentOutOfRangeException("count","Requested bytes=" + count + " Available bytes=" + _size);
             int actualCount = System.Math.Min(count, _size);
             int dstIndex = offset;
             for (int i = 0; i < actualCount; i++, _head++, dstIndex++)

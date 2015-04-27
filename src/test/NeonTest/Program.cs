@@ -14,6 +14,9 @@ namespace NeonTest
         public static void Main()
         {
             var wifi = new NeonWifiDevice();
+            wifi.EnableDebugOutput = true;
+            wifi.EnableVerboseOutput = true;
+
             wifi.Booted += WifiOnBooted;  // or you can wait on the wifi.IsInitializedEvent
             //wifi.Error += WifiOnError;
             //wifi.ConnectionStateChanged += WifiOnConnectionStateChanged;
@@ -30,7 +33,6 @@ namespace NeonTest
             }
 
             wifi.Connect("CloudGate","Escal8shun");
-            wifi.EnableDebugOutput = true;
 
             var sntp = new SntpClient(wifi, "time1.google.com");
             sntp.Start();

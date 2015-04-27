@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Oxy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Net", "IngenuityMicro.Net\IngenuityMicro.Net.csproj", "{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Neon", "IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.Neon.csproj", "{DA09F76E-1655-442D-A3AC-3892FA963677}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.ESP8266", "IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.ESP8266.csproj", "{DA09F76E-1655-442D-A3AC-3892FA963677}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Helium", "IngenuityMicro.Hardware.Helium\IngenuityMicro.Hardware.Helium.csproj", "{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}"
 EndProject

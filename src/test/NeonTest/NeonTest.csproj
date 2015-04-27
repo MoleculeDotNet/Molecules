@@ -29,6 +29,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="HashAlgorithm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Resources.Designer.cs">
@@ -41,6 +42,7 @@
     <Reference Include="Microsoft.SPOT.Hardware" />
     <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
     <Reference Include="Microsoft.SPOT.Native" />
+    <Reference Include="Microsoft.SPOT.Security.PKCS11" />
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
@@ -51,9 +53,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.Neon.csproj">
+    <ProjectReference Include="..\..\IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.ESP8266.csproj">
       <Project>{DA09F76E-1655-442D-A3AC-3892FA963677}</Project>
-      <Name>IngenuityMicro.Hardware.Neon</Name>
+      <Name>IngenuityMicro.Hardware.ESP8266</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\IngenuityMicro.Hardware.Oxygen\IngenuityMicro.Hardware.Oxygen.csproj">
       <Project>{66B08BE0-EF22-47E3-899D-E58E9E952B9F}</Project>

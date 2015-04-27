@@ -294,7 +294,8 @@ namespace IngenuityMicro.Hardware.Neon
         {
             if (serialDataReceivedEventArgs.EventType == SerialData.Chars)
             {
-                // keep doing this while there are bytes to read - don't rely on just even notification
+                // Keep doing this while there are bytes to read - don't rely on just event notification
+                // The ESP8266 is very timing sensitive and subject to buffer overrun - keep the loop tight.
                 while (_port.BytesToRead > 0)
                 {
                     while (_port.BytesToRead > 0)
@@ -321,7 +322,7 @@ namespace IngenuityMicro.Hardware.Neon
                                 _stream.Put(_buffer.Get(eat));
                                 _cbStream -= eat;
                             }
-                            // If we have fulfilled the stream request, then add the stream as a whole to the response queue
+                            // If we have fulfilled the stream request, then dispatch the received data to the datareceived handler
                             if (_cbStream == 0)
                             {
                                 if (DataReceived != null)
@@ -330,11 +331,12 @@ namespace IngenuityMicro.Hardware.Neon
                                     {
                                         var data = _stream.Get(_stream.Size);
                                         _noStreamRead.Set();
+                                        // Dispatch on a background thread so that we don't wait here for the received data to be processed.
                                         new Thread(() => { DataReceived(this, data, _receivingOnChannel); }).Start();
                                     }
                                     catch (Exception)
                                     {
-                                        // mask exceptions in callback so that they don't kill our read loop
+                                        // mask exceptions in the callback so that they don't kill our read loop
                                     }
                                 }
                                 _receivingOnChannel = -1;
@@ -388,6 +390,7 @@ namespace IngenuityMicro.Hardware.Neon
                                     var tokens = line.Split(',');
                                     _receivingOnChannel = int.Parse(tokens[1]);
                                     _cbStream = int.Parse(tokens[2]);
+                                    // block anything that would interfere with the stream read - this is used in the DiscardBufferedInput call that preceeds the sending of every command
                                     _noStreamRead.Reset();
 #if VERBOSE
                                     Dbg("Reading a stream of " + _cbStream + " bytes for channel " + _receivingOnChannel);

@@ -29,13 +29,13 @@ namespace NeonTest
                 Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
             }
 
-            wifi.Connect("XXX","XXX");
+            wifi.Connect("CloudGate","Escal8shun");
             wifi.EnableDebugOutput = true;
 
             var sntp = new SntpClient(wifi, "time1.google.com");
             sntp.Start();
 
-            var httpClient = new HttpClient(wifi, "www.hell.org");
+            var httpClient = new HttpClient(wifi, "www.example.com");
             var request = httpClient.CreateRequest();
             request.ResponseReceived += HttpResponseReceived;
             request.Send();

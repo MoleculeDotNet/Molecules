@@ -76,6 +76,13 @@ namespace IngenuityMicro.Hardware.ESP8266
                 _esp.EnableDebugOutput = value;
             }
         }
+
+        // Use this to make sure no one else interrupts your sequence of interactions with the esp hardware block.
+        public object OperationLock
+        {
+            get {  return _oplock; }
+        }
+
         public void Connect(string ssid, string password)
         {
             lock (_oplock)

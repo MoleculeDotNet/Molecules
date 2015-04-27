@@ -69,13 +69,21 @@ namespace IngenuityMicro.Net
         /// <returns></returns>
         public DateTime RequestTimeFromServer()
         {
-            return GetTimeFromServer();
+            DateTime result;
+            lock (_adapter.OperationLock)
+            {
+                result = GetTimeFromServer();
+            }
+            return result;
         }
 
         public void SetTime()
         {
-            var now = GetTimeFromServer();
-            Utility.SetLocalTime(now);
+            lock (_adapter.OperationLock)
+            {
+                var now = GetTimeFromServer();
+                Utility.SetLocalTime(now);
+            }
         }
 
         private DateTime GetTimeFromServer()

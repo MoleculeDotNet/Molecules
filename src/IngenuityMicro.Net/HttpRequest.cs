@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Reflection;
 using System.Text;
 using Microsoft.SPOT;
@@ -69,13 +70,16 @@ namespace IngenuityMicro.Net
 
         internal void AppendHeaders(StringBuilder buffer)
         {
-            foreach (var key in this.Headers)
+            foreach (var item in this.Headers)
             {
+                var key = ((DictionaryEntry) item).Key;
+                var val = ((DictionaryEntry) item).Value;
+
                 //TODO: Dates and other types and well-known header keys may need special formatting
                 // Content-Length is computed - don't allow an explicit value
                 if (key.ToString() != "Content-Length")
                 {
-                    buffer.AppendLine(key + ": " + this.Headers[key].ToString());
+                    buffer.AppendLine(key + ": " + val);
                 }
             }
             if (this.Body != null && this.Body.Length > 0)

@@ -16,6 +16,9 @@ namespace IngenuityMicro.Hardware.ESP8266
 
     public class Esp8266WifiDevice : IWifiAdapter, IDisposable
     {
+        // The amount of time that we will search for 'OK' in response to joining an AP
+        public const int JoinTimeout = 30000;
+
         public const string AT = "AT";
         public const string OK = "OK";
         public const string EchoOffCommand = "ATE0";
@@ -98,19 +101,32 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         public void Connect(string ssid, string password)
         {
+            EnsureInitialized();
             lock (_oplock)
             {
-                EnsureInitialized();
-
-                _esp.SendAndExpect(JoinAccessPointCommand + '"' + ssid + "\",\"" + password + '"', OK, -1);
+                var info = _esp.SendAndReadUntil(JoinAccessPointCommand + '"' + ssid + "\",\"" + password + '"', OK, JoinTimeout);
+                foreach (var line in info)
+                {
+                    if (line.IndexOf("STAIP") != -1)
+                    {
+                        var arg = Unquote(line.Substring(line.IndexOf(',') + 1));
+                        this.IPAddress = IPAddress.Parse(arg);
+                    }
+                    else if (line.IndexOf("STAMAC") != -1)
+                    {
+                        var arg = Unquote(line.Substring(line.IndexOf(',') + 1));
+                        this.MacAddress = arg;
+                    }
+                }
 
                 // Update our IP address
-                GetAddressInformation();
+                //GetAddressInformation();
             }
         }
 
         public void Disconnect()
         {
+            EnsureInitialized();
             lock (_oplock)
             {
                 _esp.SendAndExpect(QuitAccessPointCommand, OK);
@@ -119,6 +135,7 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         public ISocket OpenSocket(string hostNameOrAddress, int portNumber, bool useTcp)
         {
+            EnsureInitialized();
             // We lock on sockets here - we will claim oplock in OpenSocket(int socket)
             lock (_sockets)
             {
@@ -145,6 +162,7 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         internal WifiSocket OpenSocket(int socket)
         {
+            EnsureInitialized();
             lock (_oplock)
             {
                 // We should get back "n,CONNECT" where n is the socket number
@@ -181,6 +199,7 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         internal void DeleteSocket(int socket)
         {
+            EnsureInitialized();
             lock (_sockets)
             {
                 if (socket >= 0 && socket <= _sockets.Length)
@@ -192,6 +211,7 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         internal void CloseSocket(int socket)
         {
+            EnsureInitialized();
             lock (_oplock)
             {
                 if (socket >= 0 && socket <= _sockets.Length)
@@ -203,6 +223,7 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         internal void SendPayload(int iSocket, byte[] payload)
         {
+            EnsureInitialized();
             lock (_oplock)
             {
                 _esp.SendAndExpect(SendCommand + iSocket + ',' + payload.Length, OK);
@@ -234,10 +255,9 @@ namespace IngenuityMicro.Hardware.ESP8266
         {
             ArrayList result = new ArrayList();
 
+            EnsureInitialized();
             lock (_oplock)
             {
-                EnsureInitialized();
-
                 var response = _esp.SendAndReadUntil(ListAccessPointsCommand, OK);
                 foreach (var line in response)
                 {
@@ -288,24 +308,43 @@ namespace IngenuityMicro.Hardware.ESP8266
             lock (_oplock)
             {
                 bool success = false;
-                int retries = 10;
                 do
                 {
-                    if (!_powerPin.Read())
+                    while (true)
                     {
-                        Thread.Sleep(2000);
-                        SetPower(true);
-                        Thread.Sleep(2000);
+                        if (!_powerPin.Read())
+                        {
+                            Thread.Sleep(2000);
+                            SetPower(true);
+                            Thread.Sleep(2000);
+                        }
+
+                        bool pingSuccess = false;
+                        int pingRetries = 10;
+                        do
+                        {
+                            try
+                            {
+                                _esp.SendAndExpect(AT, OK, 1000);
+                                pingSuccess = true;
+                            }
+                            catch (FailedExpectException fee)
+                            {
+                                Thread.Sleep(1000);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        } while (--pingRetries > 0 && !pingSuccess);
+                        // if after 10 retries, we're getting nowhere, then cycle the power
+                        if (pingSuccess)
+                            break;
+                        SetPower(false);
                     }
 
-                    // Auto-baud
-                    _esp.SendCommand(AT);
-                    _esp.SendCommand(AT);
-                    _esp.SendCommand(AT);
-                    Thread.Sleep(100);
+                    success = false;
                     try
                     {
-                        _esp.SendAndExpect(AT, OK, 2000);
                         _esp.SendAndExpect(EchoOffCommand, OK, 2000);
 
                         SetMuxMode(true);
@@ -317,34 +356,16 @@ namespace IngenuityMicro.Hardware.ESP8266
                         GetAddressInformation();
 
                         _isInitializedEvent.Set();
-
+                        success = true;
                         if (this.Booted != null)
                             this.Booted(this, new EventArgs());
 
-                        success = true;
                     }
-                    catch (FailedExpectException fee)
-                    {
-                        // If we get a busy indication, then it is still booting - don't cycle the power
-                        if (fee.Actual.IndexOf("busy") != -1)
-                            Thread.Sleep(500);
-                        success = false;
-                    }
-                    catch (CommandTimeoutException)
+                    catch (Exception)
                     {
                         success = false;
-                        // known firmware problem. Clear the AP.
-                        _esp.SendCommand(JoinAccessPointCommand + "\"\",\"\"");
-                        if ((retries%1) == 0)
-                        {
-                            SetPower(false);
-                        }
                     }
-                } while (!success && --retries > 0);
-                if (!success)
-                {
-                    throw new CommandTimeoutException("initialization failed");
-                }
+                } while (!success);
             }
         }
 

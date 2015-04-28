@@ -14,33 +14,36 @@ namespace NeonTest
         public static void Main()
         {
             var wifi = new NeonWifiDevice();
-            wifi.EnableDebugOutput = true;
-            wifi.EnableVerboseOutput = true;
+            //wifi.EnableDebugOutput = true;
+            //wifi.EnableVerboseOutput = true;
 
             wifi.Booted += WifiOnBooted;  // or you can wait on the wifi.IsInitializedEvent
             //wifi.Error += WifiOnError;
             //wifi.ConnectionStateChanged += WifiOnConnectionStateChanged;
 
-            var apList = wifi.GetAccessPoints();
-            Debug.Print("Access points:");
-            foreach (var ap in apList)
-            {
-                Debug.Print("ECN : " + ap.Ecn);
-                Debug.Print("SSID : " + ap.Ssid);
-                Debug.Print("RSSI : " + ap.Rssi);
-                Debug.Print("MAC addr : " + ap.MacAddress);
-                Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
-            }
+            //var apList = wifi.GetAccessPoints();
+            //Debug.Print("Access points:");
+            //foreach (var ap in apList)
+            //{
+            //    Debug.Print("ECN : " + ap.Ecn);
+            //    Debug.Print("SSID : " + ap.Ssid);
+            //    Debug.Print("RSSI : " + ap.Rssi);
+            //    Debug.Print("MAC addr : " + ap.MacAddress);
+            //    Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
+            //}
 
-            wifi.Connect("CloudGate","Escal8shun");
+            wifi.Connect("XXX","XXX");
 
-            var sntp = new SntpClient(wifi, "time1.google.com");
-            sntp.Start();
+            //var sntp = new SntpClient(wifi, "time1.google.com");
+            //sntp.Start();
 
             var httpClient = new HttpClient(wifi, "www.example.com");
             var request = httpClient.CreateRequest();
+            request.Headers.Add("Connection","Keep-Alive");
             request.ResponseReceived += HttpResponseReceived;
             request.Send();
+
+            Thread.Sleep(10000);
 
             bool state = true;
             int iCounter = 0;

@@ -171,12 +171,34 @@ namespace IngenuityMicro.Utility
             }
 
             int srcIndex = offset;
-            for (int i = 0; i < count; i++, _tail++, srcIndex++)
+            int segmentLength = count;
+            if ((_capacity - _tail) < segmentLength)
+                segmentLength = _capacity - _tail;
+
+            // First segment
+            Array.Copy(src, srcIndex, _buffer, _tail, segmentLength);
+            _tail += segmentLength;
+            if (_tail >= _capacity)
+                _tail -= _capacity;
+
+            // Optionally, a second segment
+            srcIndex += segmentLength;
+            segmentLength = count - segmentLength;
+            if (segmentLength > 0)
             {
-                if (_tail == _capacity)
-                    _tail = 0;
-                _buffer[_tail] = src[srcIndex];
+                Array.Copy(src, srcIndex, _buffer, _tail, segmentLength);
+                _tail += segmentLength;
+                if (_tail >= _capacity)
+                    _tail -= _capacity;
             }
+
+            //for (int i = 0; i < count; i++, _tail++, srcIndex++)
+            //{
+            //    if (_tail == _capacity)
+            //        _tail = 0;
+            //    _buffer[_tail] = src[srcIndex];
+            //}
+
             _size = _size + count;
             return count;
         }

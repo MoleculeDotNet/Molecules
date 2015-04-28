@@ -15,9 +15,11 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         public const int DefaultCommandTimeout = 10000;
         private readonly SerialPort _port;
-        private readonly object _responseQueueLock = new object();
-        private readonly ArrayList _responseQueue = new ArrayList();
+        private readonly Queue _responseQueue = new Queue();
         private readonly AutoResetEvent _responseReceived = new AutoResetEvent(false);
+        private readonly AutoResetEvent _newDataReceived = new AutoResetEvent(false);
+        private readonly Queue _receivedDataQueue = new Queue();
+
         private readonly object _lockSendExpect = new object();
         private readonly byte[] _ipdSequence;
 
@@ -30,6 +32,7 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         private int _cbStream = 0;
         private int _receivingOnChannel;
+        private object _readLoopMonitor = new object();
         private readonly ManualResetEvent _noStreamRead = new ManualResetEvent(true);
         private bool _enableDebugOutput;
         private bool _enableVerboseOutput;
@@ -45,6 +48,12 @@ namespace IngenuityMicro.Hardware.ESP8266
         {
             _port.DataReceived += PortOnDataReceived;
             _port.Open();
+        }
+
+        public void Stop()
+        {
+            _port.Close();
+            _port.DataReceived -= PortOnDataReceived;
         }
 
         public int CommandTimeout { get; set; }
@@ -120,23 +129,6 @@ namespace IngenuityMicro.Hardware.ESP8266
                 }
             } while (true);
             return (string[])result.ToArray(typeof(string));
-        }
-
-        public string SendCommandAndReadReply(string command, string replyPrefix)
-        {
-            return SendCommandAndReadReply(command, replyPrefix, DefaultCommandTimeout);
-        }
-
-        public string SendCommandAndReadReply(string command, string replyPrefix, int timeout)
-        {
-            var reply = SendCommandAndReadReply(command, DefaultCommandTimeout);
-            if (replyPrefix != null)
-            {
-                if (reply.IndexOf(replyPrefix) != 0)
-                    throw new FailedExpectException(command, replyPrefix, reply);
-                reply = reply.Substring(replyPrefix.Length);
-            }
-            return reply;
         }
 
         public string SendCommandAndReadReply(string command)
@@ -215,12 +207,11 @@ namespace IngenuityMicro.Hardware.ESP8266
             bool haveNewData;
             do
             {
-                lock (_responseQueueLock)
+                lock (_responseQueue.SyncRoot)
                 {
                     if (_responseQueue.Count > 0)
                     {
-                        response = (string)_responseQueue[0];
-                        _responseQueue.RemoveAt(0);
+                        response = (string)_responseQueue.Dequeue();
                     }
                     else
                     {
@@ -241,6 +232,9 @@ namespace IngenuityMicro.Hardware.ESP8266
                 throw new CommandTimeoutException();
             }
 
+            if (_enableDebugOutput)
+                Debug.Print("Consumed: " + response);
+
             return response;
         }
 
@@ -257,17 +251,27 @@ namespace IngenuityMicro.Hardware.ESP8266
             return received;
         }
 
-        private void DiscardBufferedInput()
+        public void DiscardBufferedInput()
         {
             // you cannot discard input if a stream read is in progress
             _noStreamRead.WaitOne();
-            lock (_responseQueueLock)
+            Monitor.Enter(_readLoopMonitor);
+            try
             {
-                _port.DiscardInBuffer();
-                _responseQueue.Clear();
-                _buffer.Clear();
-                _stream.Clear();
-                _responseReceived.Reset();
+                lock (_responseQueue.SyncRoot)
+                {
+                    _responseQueue.Clear();
+                    _responseReceived.Reset();
+                    _buffer.Clear();
+                    _port.DiscardInBuffer();
+                    _stream.Clear();
+                }
+                if (_enableVerboseOutput)
+                    Debug.Print("BUFFER CLEARED");
+            }
+            finally
+            {
+                Monitor.Exit(_readLoopMonitor);
             }
         }
 
@@ -298,118 +302,135 @@ namespace IngenuityMicro.Hardware.ESP8266
                 // The ESP8266 is very timing sensitive and subject to buffer overrun - keep the loop tight.
                 while (_port.BytesToRead > 0)
                 {
-                    while (_port.BytesToRead > 0)
+                    var newInput = ReadExistingBinary();
+                    if (newInput != null && newInput.Length > 0)
                     {
-                        var newInput = ReadExistingBinary();
-                        if (newInput != null && newInput.Length > 0)
+                        _buffer.Put(newInput);
+                    }
+                }
+
+                ProcessBufferedInput();
+            }
+        }
+
+        private void ProcessBufferedInput()
+        {
+            do
+            {
+                Monitor.Enter(_readLoopMonitor);
+                try
+                {
+                    // if _cbstream is non-zero, then we are reading a counted stream of bytes, not crlf-delimited input
+                    if (_cbStream != 0)
+                    {
+                        // If we are capturing an input stream, then copy characters from the serial port
+                        //   until the count of desired characters == 0
+                        while (_cbStream > 0 && _buffer.Size > 0)
                         {
-                            _buffer.Put(newInput);
+                            var eat = _cbStream;
+                            if (_buffer.Size < _cbStream)
+                                eat = _buffer.Size;
+                            _stream.Put(_buffer.Get(eat));
+                            _cbStream -= eat;
+                            if (_enableVerboseOutput)
+                            {
+                                Debug.Print("STREAM: Copied " + eat + " characters to stream. Buffer contains:" +
+                                            _buffer.Size + " Stream contains : " + _stream.Size + " Still need:" +
+                                            _cbStream);
+                            }
+                        }
+                        // If we have fulfilled the stream request, then dispatch the received data to the datareceived handler
+                        if (_cbStream == 0)
+                        {
+                            if (DataReceived != null)
+                            {
+                                try
+                                {
+                                    var data = _stream.Get(_stream.Size);
+                                    _noStreamRead.Set();
+                                    // Dispatch on a background thread so that we don't wait here for the received data to be processed.
+                                    new Thread(() => { DataReceived(this, data, _receivingOnChannel); }).Start();
+                                }
+                                catch (Exception)
+                                {
+                                    // mask exceptions in the callback so that they don't kill our read loop
+                                }
+                            }
+                            _receivingOnChannel = -1;
+                            _stream.Clear();
                         }
                     }
 
-                    // if we transitioned into a stream-reading mode with data still in the buffer, then loop
-                    //   here until the buffer is drained or the stream is satisfied - whichever comes first.
-                    do
+                    if (_cbStream == 0)
                     {
-                        // if _cbstream is non-zero, then we are reading a counted stream of bytes, not crlf-delimited input
-                        if (_cbStream != 0)
+                        // process whatever is left in the buffer (after fulfilling any stream requests)
+                        var idxNewline = _buffer.IndexOf(0x0A);
+                        var idxIPD = _buffer.IndexOf(_ipdSequence);
+
+                        while ((idxNewline != -1 || idxIPD != -1) && _cbStream == 0)
                         {
-                            // If we are capturing an input stream, then copy characters from the serial port
-                            //   until the count of desired characters == 0
-                            while (_cbStream > 0 && _buffer.Size > 0)
+                            string line = "";
+                            if (idxIPD == -1 || (idxNewline != -1 && idxNewline < idxIPD))
                             {
-                                var eat = System.Math.Min(_buffer.Size, _cbStream);
-                                _stream.Put(_buffer.Get(eat));
-                                _cbStream -= eat;
-                                if (_enableVerboseOutput)
+                                line = ConvertToString(_buffer.Get(idxNewline));
+                                // eat the newline too
+                                _buffer.Skip(1);
+                                if (line != null && line.Length > 0)
                                 {
-                                    Debug.Print("STREAM: Copied " + eat + " characters to stream. Buffer contains:" + _buffer.Size + " Stream contains : " + _stream.Size + " Still need:" + _cbStream);
+                                    if (_enableDebugOutput)
+                                        Log("Received : " + line);
+                                    var idxClosed = line.IndexOf(",CLOSED");
+                                    if (idxClosed != -1)
+                                    {
+                                        // Handle socket-closed notification
+                                        var channel = int.Parse(line.Substring(0, idxClosed));
+                                        if (this.SocketClosed != null)
+                                            this.SocketClosed(this, channel);
+                                    }
+                                    else
+                                        EnqueueLine(line);
                                 }
                             }
-                            // If we have fulfilled the stream request, then dispatch the received data to the datareceived handler
-                            if (_cbStream == 0)
+                            else // idxIPD found before newline
                             {
-                                if (DataReceived != null)
+                                // find the colon which ends the data-stream introducer
+                                var idxColon = _buffer.IndexOf(0x3A);
+                                // we did not get the full introducer - we have to wait for more chars to come in
+                                if (idxColon == -1)
+                                    break;
+                                // Convert the introducer
+                                _buffer.Skip(idxIPD);
+                                line = ConvertToString(_buffer.Get(idxColon - idxIPD));
+                                _buffer.Skip(1); // eat the colon
+
+                                if (line != null && line.Length > 0)
                                 {
-                                    try
-                                    {
-                                        var data = _stream.Get(_stream.Size);
-                                        _noStreamRead.Set();
-                                        // Dispatch on a background thread so that we don't wait here for the received data to be processed.
-                                        new Thread(() => { DataReceived(this, data, _receivingOnChannel); }).Start();
-                                    }
-                                    catch (Exception)
-                                    {
-                                        // mask exceptions in the callback so that they don't kill our read loop
-                                    }
+                                    var tokens = line.Split(',');
+                                    _receivingOnChannel = int.Parse(tokens[1]);
+                                    _cbStream = int.Parse(tokens[2]);
+                                    // block anything that would interfere with the stream read - this is used in the DiscardBufferedInput call that preceeds the sending of every command
+                                    _noStreamRead.Reset();
+                                    if (_enableDebugOutput)
+                                        Log("Reading a stream of " + _cbStream + " bytes for channel " +
+                                            _receivingOnChannel);
                                 }
-                                _receivingOnChannel = -1;
-                                _stream.Clear();
                             }
+                            // What next?
+                            idxNewline = _buffer.IndexOf(0x0A);
+                            idxIPD = _buffer.IndexOf(_ipdSequence);
                         }
-
-                        if (_cbStream == 0)
-                        {
-                            // process whatever is left in the buffer (after fulfilling any stream requests)
-                            var idxNewline = _buffer.IndexOf(0x0A);
-                            var idxIPD = _buffer.IndexOf(_ipdSequence);
-
-                            while ((idxNewline != -1 || idxIPD != -1) && _cbStream == 0)
-                            {
-                                string line = "";
-                                if (idxIPD == -1 || idxNewline < idxIPD)
-                                {
-                                    line = ConvertToString(_buffer.Get(idxNewline));
-                                    // eat the newline too
-                                    _buffer.Skip(1);
-                                    if (line != null && line.Length > 0)
-                                    {
-                                        if (_enableDebugOutput)
-                                            Log("Received : " + line);
-                                        var idxClosed = line.IndexOf(",CLOSED");
-                                        if (idxClosed != -1)
-                                        {
-                                            // Handle socket-closed notification
-                                            var channel = int.Parse(line.Substring(0, idxClosed));
-                                            if (this.SocketClosed != null)
-                                                this.SocketClosed(this, channel);
-                                        }
-                                        else
-                                            EnqueueLine(line);
-                                    }
-                                }
-                                else // idxIPD found before newline
-                                {
-                                    // find the colon which ends the data-stream introducer
-                                    var idxColon = _buffer.IndexOf(0x3A);
-                                    // we did not get the full introducer - we have to wait for more chars to come in
-                                    if (idxColon == -1)
-                                        break;
-                                    // Convert the introducer
-                                    _buffer.Skip(idxIPD);
-                                    line = ConvertToString(_buffer.Get(idxColon - idxIPD));
-                                    _buffer.Skip(1); // eat the colon
-
-                                    if (line != null && line.Length > 0)
-                                    {
-                                        var tokens = line.Split(',');
-                                        _receivingOnChannel = int.Parse(tokens[1]);
-                                        _cbStream = int.Parse(tokens[2]);
-                                        // block anything that would interfere with the stream read - this is used in the DiscardBufferedInput call that preceeds the sending of every command
-                                        _noStreamRead.Reset();
-                                        if (_enableDebugOutput)
-                                            Log("Reading a stream of " + _cbStream + " bytes for channel " +
-                                                _receivingOnChannel);
-                                    }
-                                }
-                                // What next?
-                                idxNewline = _buffer.IndexOf(0x0A);
-                                idxIPD = _buffer.IndexOf(_ipdSequence);
-                            }
-                        }
-                    } while (_cbStream > 0 && _buffer.Size > 0);
+                    }
                 }
-            }
+                catch (Exception exc)
+                {
+                    // Ignore exceptions - this loop needs to keep running
+                    Debug.Print("Exception in Esp8266.ReadLoop() : " + exc);
+                }
+                finally
+                {
+                    Monitor.Exit(_readLoopMonitor);
+                }
+            } while (_cbStream > 0 && _buffer.Size > 0);
         }
 
         private string ConvertToString(byte[] input)
@@ -428,9 +449,9 @@ namespace IngenuityMicro.Hardware.ESP8266
 
         private void EnqueueLine(string line)
         {
-            lock (_responseQueueLock)
+            lock (_responseQueue.SyncRoot)
             {
-                _responseQueue.Add(line);
+                _responseQueue.Enqueue(line);
                 _responseReceived.Set();
             }
         }

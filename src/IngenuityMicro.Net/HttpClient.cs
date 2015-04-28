@@ -24,6 +24,7 @@ namespace IngenuityMicro.Net
             _adapter = adapter;
             this.Host = host;
             this.Port = port;
+            this.Headers.Add("Host",host);
         }
 
         public void Dispose()
@@ -93,9 +94,9 @@ namespace IngenuityMicro.Net
             return result;
         }
 
-        public string Host { get; set; }
+        public string Host { get; private set; }
 
-        public int Port { get; set; }
+        public int Port { get; private set; }
 
         internal void SendRequest(HttpRequest req)
         {

@@ -13,10 +13,10 @@ namespace AzureTest
 {
     public class Program
     {
-        private const string SSID = "CloudGate";
-        private const string PASSWD = "Escal8shun";
+        private const string SSID = "XXX";
+        private const string PASSWD = "XXX";
         private static readonly Uri ak16Uri = new Uri("http://ak16.azure-mobile.net/");
-        private const string AzureAppKey = "TsHtZMjAhjjWvELRFCluoxZOSGFhOq72";
+        private const string AzureAppKey = "XXX";
 
         public static void Main()
         {

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.SPOT;
 
-namespace IngenuityMicro.Utility
+namespace IngenuityMicro.Utilities
 {
     public static class Conversion
     {

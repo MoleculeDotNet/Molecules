@@ -139,9 +139,8 @@ namespace IngenuityMicro.Net
             if (_activeRequest == null)
                 return;
 
-            _activeRequest.OnResponseReceived(args);
-
-            _activeRequest = null;
+            if (_activeRequest.OnResponseReceived(args))
+                _activeRequest = null;
         }
 
         private void SocketOnSocketClosed(object sender, EventArgs args)

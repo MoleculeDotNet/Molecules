@@ -34,16 +34,14 @@ namespace NeonTest
 
             wifi.Connect("XXX","XXX");
 
-            //var sntp = new SntpClient(wifi, "time1.google.com");
-            //sntp.Start();
+            var sntp = new SntpClient(wifi, "time1.google.com");
+            sntp.Start();
 
             var httpClient = new HttpClient(wifi, "www.example.com");
             var request = httpClient.CreateRequest();
             request.Headers.Add("Connection","Keep-Alive");
             request.ResponseReceived += HttpResponseReceived;
             request.Send();
-
-            Thread.Sleep(10000);
 
             bool state = true;
             int iCounter = 0;

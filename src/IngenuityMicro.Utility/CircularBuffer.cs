@@ -3,7 +3,7 @@ using System.Collections;
 using System.Threading;
 using Microsoft.SPOT;
 
-namespace IngenuityMicro.Utility
+namespace IngenuityMicro.Utilities
 {
     public class CircularBuffer : ICollection
     {

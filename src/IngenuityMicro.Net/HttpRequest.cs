@@ -11,6 +11,8 @@ namespace IngenuityMicro.Net
     public class HttpRequest : HttpBase
     {
         private readonly HttpClient _client;
+        private HttpResponse _response;
+        private bool _failed = false;
 
         public event HttpResponseReceivedEventHandler ResponseReceived;
 
@@ -21,38 +23,47 @@ namespace IngenuityMicro.Net
             this.Path = path;
         }
 
+        /// <summary>
+        /// Reset the state of the request so that the request can be re-sent.
+        /// You can change the body and headers after reset and before resending.
+        /// </summary>
+        public void Reset()
+        {
+            // Prepare for a re-send of the same request
+            _failed = false;
+            _response = null;
+        }
+
         public void Send()
         {
             _client.SendRequest(this);
         }
 
-        internal void OnResponseReceived(SocketReceivedDataEventArgs args)
+        internal bool OnResponseReceived(SocketReceivedDataEventArgs args)
         {
-            string respText = null;
+            // We got an unparsable reply, so ignore subsequent data packets
+            if (_failed)
+                return true;
+
+            if (_response==null)
+                _response = new HttpResponse();
+
+            bool isComplete = false;
             try
             {
-                // UTF8 conversion errors can cause a throw here
-                respText = new string(Encoding.UTF8.GetChars(args.Data));
+                isComplete = _response.ProcessResponse(args.Data);
             }
             catch (Exception)
             {
-                respText = null;
-            }
-            if (respText == null || respText.Length == 0)
-                return;
-
-            var response = new HttpResponse();
-            try
-            {
-                response.ProcessResponse(respText);
-            }
-            catch (Exception)
-            {
-                response = null;
+                _response = null;
+                _failed = true;
+                isComplete = true;
             }
 
-            if (this.ResponseReceived != null)
-                this.ResponseReceived(this, response);
+            if (isComplete && this.ResponseReceived != null)
+                this.ResponseReceived(this, _response);
+
+            return isComplete;
         }
 
         public string Username { get; set; }

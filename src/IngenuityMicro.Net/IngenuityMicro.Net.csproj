@@ -43,6 +43,12 @@
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IngenuityMicro.Utility\IngenuityMicro.Utility.csproj">
+      <Project>{55830EE2-9538-4D00-B62F-C53B4056E96D}</Project>
+      <Name>IngenuityMicro.Utility</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

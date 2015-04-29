@@ -283,11 +283,8 @@ namespace IngenuityMicro.Hardware.ESP8266
         {
             if (_sockets[channel] != null)
             {
-                //REVIEW: would be more efficient to use the AtProtocolClient's event queue and not spin up new threads
-                new Thread(() =>
-                {
-                    _sockets[channel].ReceivedData(stream);
-                }).Start();
+                // this comes in on a thread-pool thread or private thread, so no need to background it here
+                _sockets[channel].ReceivedData(stream);
             }
         }
 

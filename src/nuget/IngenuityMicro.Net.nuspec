@@ -21,5 +21,8 @@
       <frameworkAssembly assemblyName="Microsoft.SPOT.Native" />
       <frameworkAssembly assemblyName="Microsoft.SPOT.Hardware" />
     </frameworkAssemblies>
+    <dependencies>
+      <dependency id="IngenuityMicro.Utility" />
+    </dependencies>
   </metadata>
 </package>

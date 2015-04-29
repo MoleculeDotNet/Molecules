@@ -4,7 +4,7 @@ using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using Microsoft.SPOT;
-using IngenuityMicro.Utility;
+using IngenuityMicro.Utilities;
 
 namespace IngenuityMicro.Hardware.ESP8266
 {
@@ -300,13 +300,10 @@ namespace IngenuityMicro.Hardware.ESP8266
             {
                 // Keep doing this while there are bytes to read - don't rely on just event notification
                 // The ESP8266 is very timing sensitive and subject to buffer overrun - keep the loop tight.
-                while (_port.BytesToRead > 0)
+                var newInput = ReadExistingBinary();
+                if (newInput != null && newInput.Length > 0)
                 {
-                    var newInput = ReadExistingBinary();
-                    if (newInput != null && newInput.Length > 0)
-                    {
-                        _buffer.Put(newInput);
-                    }
+                    _buffer.Put(newInput);
                 }
 
                 ProcessBufferedInput();
@@ -332,7 +329,7 @@ namespace IngenuityMicro.Hardware.ESP8266
                                 eat = _buffer.Size;
                             _stream.Put(_buffer.Get(eat));
                             _cbStream -= eat;
-                            if (_enableVerboseOutput)
+                            if (_enableDebugOutput)
                             {
                                 Debug.Print("STREAM: Copied " + eat + " characters to stream. Buffer contains:" +
                                             _buffer.Size + " Stream contains : " + _stream.Size + " Still need:" +
@@ -346,10 +343,12 @@ namespace IngenuityMicro.Hardware.ESP8266
                             {
                                 try
                                 {
+                                    var channel = _receivingOnChannel;
                                     var data = _stream.Get(_stream.Size);
                                     _noStreamRead.Set();
-                                    // Dispatch on a background thread so that we don't wait here for the received data to be processed.
-                                    new Thread(() => { DataReceived(this, data, _receivingOnChannel); }).Start();
+                                    // Run this in the background so as not to slow down the read loop
+                                    //TODO: Dispatch on a threadpool thread to reduce cost
+                                    new Thread(() => { DataReceived(this, data, channel); }).Start();
                                 }
                                 catch (Exception)
                                 {
@@ -370,9 +369,12 @@ namespace IngenuityMicro.Hardware.ESP8266
                         while ((idxNewline != -1 || idxIPD != -1) && _cbStream == 0)
                         {
                             string line = "";
-                            if (idxIPD == -1 || (idxNewline != -1 && idxNewline < idxIPD))
+                            if ((idxIPD == -1 && idxNewline!=-1) || (idxNewline != -1 && idxNewline < idxIPD))
                             {
-                                line = ConvertToString(_buffer.Get(idxNewline));
+                                if (idxNewline == 0)
+                                    line = "";
+                                else
+                                    line = ConvertToString(_buffer.Get(idxNewline));
                                 // eat the newline too
                                 _buffer.Skip(1);
                                 if (line != null && line.Length > 0)
@@ -391,7 +393,7 @@ namespace IngenuityMicro.Hardware.ESP8266
                                         EnqueueLine(line);
                                 }
                             }
-                            else // idxIPD found before newline
+                            else if (idxIPD!=-1) // idxIPD found before newline
                             {
                                 // find the colon which ends the data-stream introducer
                                 var idxColon = _buffer.IndexOf(0x3A);

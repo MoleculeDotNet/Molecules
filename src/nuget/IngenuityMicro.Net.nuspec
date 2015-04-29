@@ -4,10 +4,10 @@
     <id>IngenuityMicro.Net</id>
     <title>Networking helper classes for IngenuityMicro Molecule.net boards</title>
     <version>0.3.2-beta</version>
-    <authors>Martin Calsyn, Justin Wilson</authors>
+    <authors>Martin Calsyn</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
-    <projectUrl>https://github.com/MoleculeDotNet/Oxygen</projectUrl>
+    <projectUrl>https://github.com/MoleculeDotNet/Molecules</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Networking helper classes for .Net Micro Framework on Molecule.Net boards</summary>

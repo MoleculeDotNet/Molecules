@@ -7,10 +7,13 @@ using IngenuityMicro.Hardware.Neon;
 using System.Threading;
 using IngenuityMicro.Net;
 
-namespace NeonTest
+namespace AzureTest
 {
     public class Program
     {
+        private const string SSID = "CloudGate";
+        private const string PASSWD = "Escal8shun";
+
         public static void Main()
         {
             var wifi = new NeonWifiDevice();
@@ -18,30 +21,17 @@ namespace NeonTest
             //wifi.EnableVerboseOutput = true;
 
             wifi.Booted += WifiOnBooted;  // or you can wait on the wifi.IsInitializedEvent
-            //wifi.Error += WifiOnError;
-            //wifi.ConnectionStateChanged += WifiOnConnectionStateChanged;
 
-            //var apList = wifi.GetAccessPoints();
-            //Debug.Print("Access points:");
-            //foreach (var ap in apList)
-            //{
-            //    Debug.Print("ECN : " + ap.Ecn);
-            //    Debug.Print("SSID : " + ap.Ssid);
-            //    Debug.Print("RSSI : " + ap.Rssi);
-            //    Debug.Print("MAC addr : " + ap.MacAddress);
-            //    Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
-            //}
-
-            wifi.Connect("CloudGate","Escal8shun");
+            wifi.Connect(SSID, PASSWD);
 
             var sntp = new SntpClient(wifi, "time1.google.com");
-            sntp.Start();
+            sntp.SetTime();
 
-            var uri = new Uri("http://www.example.com");
+            Uri uri = new Uri("http://www.example.com");
             var httpClient = new HttpClient(wifi, uri.Host);
             var request = new HttpRequest();
             request.Uri = uri;
-            request.Headers.Add("Connection","Keep-Alive");
+            request.Headers.Add("Connection", "Keep-Alive");
             request.ResponseReceived += HttpResponseReceived;
             httpClient.SendAsync(request);
 

@@ -4,7 +4,7 @@
     <id>IngenuityMicro.Utility</id>
     <title>Utility functions used by many IngenuityMicro packages</title>
     <version>0.3.2-beta</version>
-    <authors>Martin Calsyn, Justin Wilson</authors>
+    <authors>Martin Calsyn</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
     <projectUrl>https://github.com/MoleculeDotNet/Oxygen</projectUrl>

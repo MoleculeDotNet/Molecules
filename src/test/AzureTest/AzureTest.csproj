@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <AssemblyName>AzureTest</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>AzureTest</RootNamespace>
+    <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4B9000D7-9C6E-454F-B9C8-2A2BB5D5D4C6}</ProjectGuid>
+    <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
+    <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SPOT.Hardware" />
+    <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
+    <Reference Include="Microsoft.SPOT.Native" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\IngenuityMicro.Hardware.ESP8266\IngenuityMicro.Hardware.ESP8266.csproj">
+      <Project>{DA09F76E-1655-442D-A3AC-3892FA963677}</Project>
+      <Name>IngenuityMicro.Hardware.ESP8266</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.Neon.csproj">
+      <Project>{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}</Project>
+      <Name>IngenuityMicro.Hardware.Neon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IngenuityMicro.Hardware.Oxygen\IngenuityMicro.Hardware.Oxygen.csproj">
+      <Project>{66B08BE0-EF22-47E3-899D-E58E9E952B9F}</Project>
+      <Name>IngenuityMicro.Hardware.Oxygen</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IngenuityMicro.Net.Azure\IngenuityMicro.Net.Azure.csproj">
+      <Project>{6CA264D3-75A4-4710-A349-6CDC0B410932}</Project>
+      <Name>IngenuityMicro.Net.Azure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IngenuityMicro.Net\IngenuityMicro.Net.csproj">
+      <Project>{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}</Project>
+      <Name>IngenuityMicro.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\IngenuityMicro.Utility\IngenuityMicro.Utility.csproj">
+      <Project>{55830EE2-9538-4D00-B62F-C53B4056E96D}</Project>
+      <Name>IngenuityMicro.Utility</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
+  <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -3,8 +3,8 @@
   <metadata>
     <id>IngenuityMicro.Hardware.Helium</id>
     <title>Support for the IngenuityMicro Molecule.Net Oxygen processor board</title>
-    <version>0.3.1-beta</version>
-    <authors>Martin Calsyn, Justin Wilson</authors>
+    <version>0.3.2-beta</version>
+    <authors>Martin Calsyn</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
     <projectUrl>https://github.com/MoleculeDotNet/Oxygen</projectUrl>

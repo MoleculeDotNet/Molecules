@@ -24,21 +24,33 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE,MF_FRAMEWORK_VERSION_V4_3,MF_FRAMEWORK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DefaultUriParser.cs" />
     <Compile Include="HttpBase.cs" />
     <Compile Include="HttpClient.cs" />
     <Compile Include="HttpRequest.cs" />
     <Compile Include="HttpResponse.cs" />
-    <Compile Include="HttpVerb.cs" />
+    <Compile Include="HttpMethod.cs" />
     <Compile Include="INetworkAdapter.cs" />
     <Compile Include="ISocket.cs" />
     <Compile Include="IWifiAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SntpClient.cs" />
+    <Compile Include="Uri.cs" />
+    <Compile Include="UriComponents.cs" />
+    <Compile Include="UriElements.cs" />
+    <Compile Include="UriFormat.cs" />
+    <Compile Include="UriFormatException.cs" />
+    <Compile Include="UriHelper.cs" />
+    <Compile Include="UriHostNameType.cs" />
+    <Compile Include="UriKind.cs" />
+    <Compile Include="UriParseComponents.cs" />
+    <Compile Include="UriParser.cs" />
+    <Compile Include="UriPartial.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native" />

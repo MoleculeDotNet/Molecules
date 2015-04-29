@@ -29,10 +29,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="IMobileServiceEntity.cs" />
+    <Compile Include="IMobileServiceTable.cs" />
+    <Compile Include="MobileServiceClient.cs" />
+    <Compile Include="MobileServiceTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IngenuityMicro.Net\IngenuityMicro.Net.csproj">
+      <Project>{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}</Project>
+      <Name>IngenuityMicro.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\IngenuityMicro.Utility\IngenuityMicro.Utility.csproj">
+      <Project>{55830EE2-9538-4D00-B62F-C53B4056E96D}</Project>
+      <Name>IngenuityMicro.Utility</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

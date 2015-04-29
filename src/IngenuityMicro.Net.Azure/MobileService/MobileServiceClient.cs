@@ -2,7 +2,7 @@
 using System.Text;
 using IngenuityMicro.Net;
 
-namespace uPLibrary.Cloud.WindowsAzure.MobileService
+namespace IngenuityMicro.Net.Azure.MobileService
 {
     /// <summary>
     /// Client for Windows Azure Mobile Services via REST API
@@ -67,7 +67,7 @@ namespace uPLibrary.Cloud.WindowsAzure.MobileService
             this.httpClient = new HttpClient(adapter, applicationUri.Host, applicationUri.Port);
 
             // create HTTP request
-            this.httpRequest = httpClient.CreateRequest();
+            this.httpRequest = new HttpRequest();
             this.PrepareZumoHeaders();
             
             this.body = new StringBuilder();
@@ -122,7 +122,6 @@ namespace uPLibrary.Cloud.WindowsAzure.MobileService
             //this.httpRequest.ContentLength = body.Length;
             this.httpRequest.Method = HttpMethod.Post;
             
-            this.httpRequest.Send();
             HttpResponse httpResp = this.httpClient.Send(this.httpRequest);
 
             return body.ToString();
@@ -157,7 +156,7 @@ namespace uPLibrary.Cloud.WindowsAzure.MobileService
             }
 
             this.httpRequest.Uri = new Uri(this.uri.ToString());
-            this.httpRequest.ContentLength = body.Length;
+            //this.httpRequest.ContentLength = body.Length;
             this.httpRequest.Method = HttpMethod.Patch;
 
             HttpResponse httpResp = this.httpClient.Send(this.httpRequest);
@@ -192,12 +191,12 @@ namespace uPLibrary.Cloud.WindowsAzure.MobileService
             }
 
             this.httpRequest.Uri = new Uri(this.uri.ToString());
-            this.httpRequest.ContentLength = 0;
+            //this.httpRequest.ContentLength = 0;
             this.httpRequest.Method = HttpMethod.Delete;
 
             HttpResponse httpResp = this.httpClient.Send(this.httpRequest);
 
-            return (httpResp.StatusCode == HttpStatusCode.NoContent);
+            return (httpResp.StatusCode == 204 /*HttpStatusCode.NoContent*/);
         }
 
         /// <summary>
@@ -236,7 +235,7 @@ namespace uPLibrary.Cloud.WindowsAzure.MobileService
             }
 
             this.httpRequest.Uri = new Uri(this.uri.ToString());
-            this.httpRequest.ContentLength = 0;
+            //this.httpRequest.ContentLength = 0;
             this.httpRequest.Method = HttpMethod.Get;
 
             HttpResponse httpResp = this.httpClient.Send(this.httpRequest);
@@ -252,27 +251,6 @@ namespace uPLibrary.Cloud.WindowsAzure.MobileService
         public IMobileServiceTable GetTable(string tableName)
         {
             return new MobileServiceTable(tableName, this);
-        }
-                
-        void httpClient_RecvBody(HttpResponse httpResp)
-        {
-            this.body.Clear();
-            int read = 0;
-            // HTTP client calls this callback more times until response body finished
-            if ((read = httpResp.Body.Read(this.buffer, 0, BUFFER_SIZE)) > 0)
-            {
-                body.Append(Encoding.UTF8.GetChars(this.buffer, 0, read));
-            }
-        }
-
-        void httpClient_SendBody(HttpRequest httpReq)
-        {
-            // send request body (if exists)
-            if (this.body.Length > 0)
-            {
-                byte[] buffer = Encoding.UTF8.GetBytes(this.body.ToString());
-                httpReq.Body.Write(buffer, 0, buffer.Length);
-            }
         }
     }
 }

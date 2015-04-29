@@ -5,7 +5,9 @@ using Microsoft.SPOT;
 using IngenuityMicro.Hardware.Oxygen;
 using IngenuityMicro.Hardware.Neon;
 using System.Threading;
+
 using IngenuityMicro.Net;
+using IngenuityMicro.Net.Azure.MobileService;
 
 namespace AzureTest
 {
@@ -13,6 +15,8 @@ namespace AzureTest
     {
         private const string SSID = "CloudGate";
         private const string PASSWD = "Escal8shun";
+        private static readonly Uri ak16Uri = new Uri("http://ak16.azure-mobile.net/");
+        private const string AzureAppKey = "TsHtZMjAhjjWvELRFCluoxZOSGFhOq72";
 
         public static void Main()
         {
@@ -27,13 +31,28 @@ namespace AzureTest
             var sntp = new SntpClient(wifi, "time1.google.com");
             sntp.SetTime();
 
-            Uri uri = new Uri("http://www.example.com");
-            var httpClient = new HttpClient(wifi, uri.Host);
-            var request = new HttpRequest();
-            request.Uri = uri;
-            request.Headers.Add("Connection", "Keep-Alive");
-            request.ResponseReceived += HttpResponseReceived;
-            httpClient.SendAsync(request);
+            MobileServiceClient msc = new MobileServiceClient(wifi, ak16Uri, null, AzureAppKey);
+            IMobileServiceTable tab = msc.GetTable("environment_measures");
+
+            //try
+            //{
+            // Test a dummy insert for now
+            MeasurementRow row = new MeasurementRow();
+            row.DateTimeStamp = DateTime.Now;
+            row.where = "here"; //Resources.GetString(Resources.StringResources.VanWie);
+            row.what = "nothing";
+            row.value = -1f;
+            row.uom = " ";
+            string surprise = tab.Insert(row); // Failing on this line
+            Debug.Print(DateTime.Now.ToString("T") + " " + surprise);
+
+            //Uri uri = new Uri("http://www.example.com");
+            //var httpClient = new HttpClient(wifi, uri.Host);
+            //var request = new HttpRequest();
+            //request.Uri = uri;
+            //request.Headers.Add("Connection", "Keep-Alive");
+            //request.ResponseReceived += HttpResponseReceived;
+            //httpClient.SendAsync(request);
 
             bool state = true;
             int iCounter = 0;

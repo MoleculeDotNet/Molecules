@@ -46,14 +46,6 @@ namespace AzureTest
             string surprise = tab.Insert(row); // Failing on this line
             Debug.Print(DateTime.Now.ToString("T") + " " + surprise);
 
-            //Uri uri = new Uri("http://www.example.com");
-            //var httpClient = new HttpClient(wifi, uri.Host);
-            //var request = new HttpRequest();
-            //request.Uri = uri;
-            //request.Headers.Add("Connection", "Keep-Alive");
-            //request.ResponseReceived += HttpResponseReceived;
-            //httpClient.SendAsync(request);
-
             bool state = true;
             int iCounter = 0;
             while (true)

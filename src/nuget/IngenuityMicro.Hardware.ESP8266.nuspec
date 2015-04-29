@@ -3,7 +3,7 @@
   <metadata>
     <id>IngenuityMicro.Hardware.ESP8266</id>
     <title>.Net Micro Framework Managed driver for ESP8266 wifi</title>
-    <version>0.3.2-beta</version>
+    <version>1.0.0</version>
     <authors>Martin Calsyn</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->

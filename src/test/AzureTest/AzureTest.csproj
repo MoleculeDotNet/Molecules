@@ -10,6 +10,8 @@
     <ProjectGuid>{4B9000D7-9C6E-454F-B9C8-2A2BB5D5D4C6}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,9 +41,33 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="MFIngenuityMicro.Hardware.Neon, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IngenuityMicro.Hardware.Neon.1.1.0\lib\netmf43\MFIngenuityMicro.Hardware.Neon.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MFIngenuityMicro.Hardware.Oxygen, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IngenuityMicro.Hardware.Neon.1.1.0\lib\netmf43\MFIngenuityMicro.Hardware.Oxygen.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.SPOT.Hardware" />
     <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
     <Reference Include="Microsoft.SPOT.Native" />
+    <Reference Include="PervasiveDigital.Hardware.ESP8266, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IngenuityMicro.Hardware.Neon.1.1.0\lib\netmf43\PervasiveDigital.Hardware.ESP8266.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PervasiveDigital.Net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\PervasiveDigital.Net.Azure.1.0.0\lib\netmf43\PervasiveDigital.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PervasiveDigital.Net.Azure, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\PervasiveDigital.Net.Azure.1.0.0\lib\netmf43\PervasiveDigital.Net.Azure.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PervasiveDigital.Utility, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\PervasiveDigital.Net.Azure.1.0.0\lib\netmf43\PervasiveDigital.Utility.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -51,31 +77,15 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\IngenuityMicro.Hardware.ESP8266\IngenuityMicro.Hardware.ESP8266.csproj">
-      <Project>{DA09F76E-1655-442D-A3AC-3892FA963677}</Project>
-      <Name>IngenuityMicro.Hardware.ESP8266</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.Neon.csproj">
-      <Project>{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}</Project>
-      <Name>IngenuityMicro.Hardware.Neon</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\IngenuityMicro.Hardware.Oxygen\IngenuityMicro.Hardware.Oxygen.csproj">
-      <Project>{66B08BE0-EF22-47E3-899D-E58E9E952B9F}</Project>
-      <Name>IngenuityMicro.Hardware.Oxygen</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\IngenuityMicro.Net.Azure\IngenuityMicro.Net.Azure.csproj">
-      <Project>{6CA264D3-75A4-4710-A349-6CDC0B410932}</Project>
-      <Name>IngenuityMicro.Net.Azure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\IngenuityMicro.Net\IngenuityMicro.Net.csproj">
-      <Project>{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}</Project>
-      <Name>IngenuityMicro.Net</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\IngenuityMicro.Utility\IngenuityMicro.Utility.csproj">
-      <Project>{55830EE2-9538-4D00-B62F-C53B4056E96D}</Project>
-      <Name>IngenuityMicro.Utility</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
 </Project>

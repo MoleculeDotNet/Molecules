@@ -1,8 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Version>
-  <Major>1</Major>
-  <Minor>0</Minor>
-  <Build>0</Build>
-  <Revision>0</Revision>
-  <Suffix></Suffix>
-</Version>
+<Versions>
+  <Version package="IngenuityMicro.Hardware.Helium">
+    <Major>1</Major>
+    <Minor>1</Minor>
+    <Build>0</Build>
+    <Revision>0</Revision>
+    <Suffix></Suffix>
+  </Version>
+  <Version package="IngenuityMicro.Hardware.Hydrogen">
+    <Major>1</Major>
+    <Minor>1</Minor>
+    <Build>0</Build>
+    <Revision>0</Revision>
+    <Suffix></Suffix>
+  </Version>
+  <Version package="IngenuityMicro.Hardware.Neon">
+    <Major>1</Major>
+    <Minor>1</Minor>
+    <Build>0</Build>
+    <Revision>0</Revision>
+    <Suffix></Suffix>
+  </Version>
+  <Version package="IngenuityMicro.Hardware.Oxygen">
+    <Major>1</Major>
+    <Minor>1</Minor>
+    <Build>0</Build>
+    <Revision>0</Revision>
+    <Suffix></Suffix>
+  </Version>
+</Versions>

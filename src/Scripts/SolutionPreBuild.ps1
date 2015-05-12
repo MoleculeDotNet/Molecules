@@ -1,7 +1,7 @@
 
 [CmdletBinding()]
 
-param($SolutionDir, $ProjectDir, $TargetDir, $TargetFileName, $ConfigurationName, $nuspec, [switch]$Disable)
+param($SolutionDir, $ProjectDir, $ProjectName, $TargetDir, $TargetFileName, $ConfigurationName, $nuspec, [switch]$Disable)
 
 # Regular expression pattern to find the version in the build number 
 # and then apply it to the assemblies
@@ -20,8 +20,9 @@ if ($PSBoundParameters.ContainsKey('Disable'))
 
 # read the desired new version
 [xml] $doc = gc $SolutionDir"Version.xml"
-$NewVersion = $doc.Version.Major + "." + $doc.Version.Minor + "." + $doc.Version.Build + "." + $doc.Version.Revision
-$NewNuspecVersion = $doc.Version.Major + "." + $doc.Version.Minor + "." + $doc.Version.Build + $doc.Version.Suffix
+$node = $doc.SelectSinglenode("/Versions/Version[@package='" + $ProjectName + "']")
+$NewVersion = $node.Major + "." + $node.Minor + "." + $node.Build + "." + $node.Revision
+$NewNuspecVersion = $node.Major + "." + $node.Minor + "." + $node.Build + $node.Suffix
 
 # Apply the version to the assembly property files
 $files = gci $ProjectDir -recurse -include "*Properties*","My Project" | 

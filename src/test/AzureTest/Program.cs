@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Text;
 using Microsoft.SPOT;
-using IngenuityMicro.Hardware.Oxygen;
-using IngenuityMicro.Hardware.Neon;
 using System.Threading;
 
-using IngenuityMicro.Net;
-using IngenuityMicro.Net.Azure.MobileService;
+using IngenuityMicro.Hardware.Oxygen;
+using IngenuityMicro.Hardware.Neon;
+
+using PervasiveDigital;
+using PervasiveDigital.Net;
+using PervasiveDigital.Net.Azure.MobileService;
 
 namespace AzureTest
 {

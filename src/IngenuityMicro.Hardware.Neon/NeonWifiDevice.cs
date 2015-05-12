@@ -2,7 +2,7 @@ using System;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using System.IO.Ports;
-using IngenuityMicro.Hardware.ESP8266;
+using PervasiveDigital.Hardware.ESP8266;
 
 namespace IngenuityMicro.Hardware.Neon
 {

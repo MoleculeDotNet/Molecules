@@ -5,7 +5,8 @@ using Microsoft.SPOT;
 using IngenuityMicro.Hardware.Oxygen;
 using IngenuityMicro.Hardware.Neon;
 using System.Threading;
-using IngenuityMicro.Net;
+using PervasiveDigital;
+using PervasiveDigital.Net;
 
 namespace NeonTest
 {
@@ -32,10 +33,10 @@ namespace NeonTest
             //    Debug.Print("Connection is : " + (ap.AutomaticConnectionMode ? "Automatic" : "Manual"));
             //}
 
-            wifi.Connect("CloudGate","Escal8shun");
+            wifi.Connect("XXX","XXX");
 
             var sntp = new SntpClient(wifi, "time1.google.com");
-            sntp.Start();
+            sntp.SetTime();
 
             var uri = new Uri("http://www.example.com");
             var httpClient = new HttpClient(wifi, uri.Host);
@@ -44,7 +45,7 @@ namespace NeonTest
             request.Headers.Add("Connection","Keep-Alive");
             request.ResponseReceived += HttpResponseReceived;
             httpClient.SendAsync(request);
-
+            
             bool state = true;
             int iCounter = 0;
             while (true)

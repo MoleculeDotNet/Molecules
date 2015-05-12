@@ -2,8 +2,8 @@
 <package>
   <metadata>
     <id>IngenuityMicro.Hardware.Neon</id>
-    <title>Support for the IngenuityMicro Molecule.Net Neon Wifi board</title>
-    <version>1.0.0</version>
+    <title>IngenuityMicro Molecule.Net Neon Wifi board</title>
+    <version>1.1.0</version>
     <authors>Martin Calsyn</authors>
     <owners>IngenuityMicro</owners>
     <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
@@ -22,8 +22,8 @@
       <frameworkAssembly assemblyName="Microsoft.SPOT.Hardware" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="IngenuityMicro.Hardware.ESP8266" />
-      <dependency id="IngenuityMicro.Hardware.Oxygen" />
+      <dependency id="PervasiveDigital.Hardware.ESP8266" version="1.0.0.0" />
+      <dependency id="IngenuityMicro.Hardware.Oxygen" version="1.0.0.0" />
     </dependencies>
   </metadata>
 </package>

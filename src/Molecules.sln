@@ -17,14 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{A35738
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{2581CBDF-9D3C-4C43-BF4A-B3C9CEAE44F1}"
 	ProjectSection(SolutionItems) = preProject
-		nuget\IngenuityMicro.Hardware.ESP8266.nuspec = nuget\IngenuityMicro.Hardware.ESP8266.nuspec
 		nuget\IngenuityMicro.Hardware.Helium.nuspec = nuget\IngenuityMicro.Hardware.Helium.nuspec
 		nuget\IngenuityMicro.Hardware.Hydrogen.nuspec = nuget\IngenuityMicro.Hardware.Hydrogen.nuspec
 		nuget\IngenuityMicro.Hardware.Neon.nuspec = nuget\IngenuityMicro.Hardware.Neon.nuspec
 		nuget\IngenuityMicro.Hardware.Oxygen.nuspec = nuget\IngenuityMicro.Hardware.Oxygen.nuspec
-		nuget\IngenuityMicro.Net.Azure.nuspec = nuget\IngenuityMicro.Net.Azure.nuspec
-		nuget\IngenuityMicro.Net.nuspec = nuget\IngenuityMicro.Net.nuspec
-		nuget\IngenuityMicro.Utility.nuspec = nuget\IngenuityMicro.Utility.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{366340D5-DD26-4EA6-91DE-D76E91C018D1}"
@@ -33,11 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{3663
 		Scripts\SolutionPreBuild.ps1 = Scripts\SolutionPreBuild.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Utility", "IngenuityMicro.Utility\IngenuityMicro.Utility.csproj", "{55830EE2-9538-4D00-B62F-C53B4056E96D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Oxygen", "IngenuityMicro.Hardware.Oxygen\IngenuityMicro.Hardware.Oxygen.csproj", "{66B08BE0-EF22-47E3-899D-E58E9E952B9F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Net", "IngenuityMicro.Net\IngenuityMicro.Net.csproj", "{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Helium", "IngenuityMicro.Hardware.Helium\IngenuityMicro.Hardware.Helium.csproj", "{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}"
 EndProject
@@ -52,11 +44,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.ESP8266", "IngenuityMicro.Hardware.ESP8266\IngenuityMicro.Hardware.ESP8266.csproj", "{DA09F76E-1655-442D-A3AC-3892FA963677}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Hardware.Neon", "IngenuityMicro.Hardware.Neon\IngenuityMicro.Hardware.Neon.csproj", "{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IngenuityMicro.Net.Azure", "IngenuityMicro.Net.Azure\IngenuityMicro.Net.Azure.csproj", "{6CA264D3-75A4-4710-A349-6CDC0B410932}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureTest", "test\AzureTest\AzureTest.csproj", "{4B9000D7-9C6E-454F-B9C8-2A2BB5D5D4C6}"
 EndProject
@@ -66,18 +54,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{55830EE2-9538-4D00-B62F-C53B4056E96D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55830EE2-9538-4D00-B62F-C53B4056E96D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55830EE2-9538-4D00-B62F-C53B4056E96D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55830EE2-9538-4D00-B62F-C53B4056E96D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{66B08BE0-EF22-47E3-899D-E58E9E952B9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66B08BE0-EF22-47E3-899D-E58E9E952B9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66B08BE0-EF22-47E3-899D-E58E9E952B9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66B08BE0-EF22-47E3-899D-E58E9E952B9F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -92,18 +72,10 @@ Global
 		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{DA09F76E-1655-442D-A3AC-3892FA963677}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA09F76E-1655-442D-A3AC-3892FA963677}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA09F76E-1655-442D-A3AC-3892FA963677}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA09F76E-1655-442D-A3AC-3892FA963677}.Release|Any CPU.Build.0 = Release|Any CPU
 		{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CA264D3-75A4-4710-A349-6CDC0B410932}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CA264D3-75A4-4710-A349-6CDC0B410932}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CA264D3-75A4-4710-A349-6CDC0B410932}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CA264D3-75A4-4710-A349-6CDC0B410932}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4B9000D7-9C6E-454F-B9C8-2A2BB5D5D4C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4B9000D7-9C6E-454F-B9C8-2A2BB5D5D4C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B9000D7-9C6E-454F-B9C8-2A2BB5D5D4C6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -115,15 +87,11 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{55830EE2-9538-4D00-B62F-C53B4056E96D} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{66B08BE0-EF22-47E3-899D-E58E9E952B9F} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
-		{CB2A8B83-5CFB-4DBB-B794-35B3BB1C43A6} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{1FA0E17A-6569-4BCD-A7A4-6F55E24CC48B} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{A2F6A76E-61C6-4B6A-B0A5-1DAB4D876879} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{1A8DD3A1-E8C2-4FBA-9044-AE6792C15D2C} = {9116141A-A51F-472D-A4FF-9C0897B33B34}
-		{DA09F76E-1655-442D-A3AC-3892FA963677} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{66CE3657-AC8E-44F5-91D6-E2DEA4ACEC35} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
-		{6CA264D3-75A4-4710-A349-6CDC0B410932} = {A357389B-DE9A-4D1E-BC4F-490489CD4714}
 		{4B9000D7-9C6E-454F-B9C8-2A2BB5D5D4C6} = {9116141A-A51F-472D-A4FF-9C0897B33B34}
 	EndGlobalSection
 EndGlobal

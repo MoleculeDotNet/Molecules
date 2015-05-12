@@ -1,5 +1,5 @@
 using System;
-using IngenuityMicro.Net.Azure.MobileService;
+using PervasiveDigital.Net.Azure.MobileService;
 using Microsoft.SPOT;
 
 namespace AzureTest

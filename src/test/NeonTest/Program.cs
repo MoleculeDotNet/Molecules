@@ -80,7 +80,7 @@ namespace NeonTest
             if (resp.Body != null && resp.Body.Length > 0)
             {
                 Debug.Print("Body:");
-                Debug.Print(resp.Body);
+                //Debug.Print(resp.Body);
             }
         }
 

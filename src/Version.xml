@@ -16,15 +16,15 @@
   </Version>
   <Version package="IngenuityMicro.Hardware.Neon">
     <Major>1</Major>
-    <Minor>1</Minor>
-    <Build>0</Build>
+    <Minor>3</Minor>
+    <Build>2</Build>
     <Revision>0</Revision>
     <Suffix></Suffix>
   </Version>
   <Version package="IngenuityMicro.Hardware.Oxygen">
     <Major>1</Major>
-    <Minor>1</Minor>
-    <Build>0</Build>
+    <Minor>3</Minor>
+    <Build>1</Build>
     <Revision>0</Revision>
     <Suffix></Suffix>
   </Version>

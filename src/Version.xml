@@ -1,31 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Versions>
   <Version package="IngenuityMicro.Hardware.Helium">
-    <Major>1</Major>
-    <Minor>1</Minor>
-    <Build>0</Build>
-    <Revision>0</Revision>
-    <Suffix></Suffix>
-  </Version>
-  <Version package="IngenuityMicro.Hardware.Hydrogen">
-    <Major>1</Major>
-    <Minor>1</Minor>
-    <Build>0</Build>
-    <Revision>0</Revision>
-    <Suffix></Suffix>
-  </Version>
-  <Version package="IngenuityMicro.Hardware.Neon">
-    <Major>1</Major>
-    <Minor>3</Minor>
-    <Build>3</Build>
-    <Revision>0</Revision>
-    <Suffix></Suffix>
-  </Version>
-  <Version package="IngenuityMicro.Hardware.Oxygen">
-    <Major>1</Major>
-    <Minor>3</Minor>
+    <Major>2</Major>
+    <Minor>0</Minor>
     <Build>1</Build>
     <Revision>0</Revision>
-    <Suffix></Suffix>
+    <Suffix>-beta</Suffix>
+  </Version>
+  <Version package="IngenuityMicro.Hardware.Hydrogen">
+    <Major>2</Major>
+    <Minor>0</Minor>
+    <Build>1</Build>
+    <Revision>0</Revision>
+    <Suffix>-beta</Suffix>
+  </Version>
+  <Version package="IngenuityMicro.Hardware.Neon">
+    <Major>2</Major>
+    <Minor>0</Minor>
+    <Build>2</Build>
+    <Revision>0</Revision>
+    <Suffix>-beta</Suffix>
+  </Version>
+  <Version package="IngenuityMicro.Hardware.Oxygen">
+    <Major>2</Major>
+    <Minor>0</Minor>
+    <Build>1</Build>
+    <Revision>0</Revision>
+    <Suffix>-beta</Suffix>
   </Version>
 </Versions>

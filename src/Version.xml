@@ -3,29 +3,29 @@
   <Version package="IngenuityMicro.Hardware.Helium">
     <Major>2</Major>
     <Minor>0</Minor>
-    <Build>1</Build>
+    <Build>3</Build>
     <Revision>0</Revision>
-    <Suffix>-beta</Suffix>
+    <Suffix></Suffix>
   </Version>
   <Version package="IngenuityMicro.Hardware.Hydrogen">
     <Major>2</Major>
     <Minor>0</Minor>
-    <Build>1</Build>
+    <Build>3</Build>
     <Revision>0</Revision>
-    <Suffix>-beta</Suffix>
+    <Suffix></Suffix>
   </Version>
   <Version package="IngenuityMicro.Hardware.Neon">
     <Major>2</Major>
     <Minor>0</Minor>
-    <Build>2</Build>
+    <Build>3</Build>
     <Revision>0</Revision>
-    <Suffix>-beta</Suffix>
+    <Suffix></Suffix>
   </Version>
   <Version package="IngenuityMicro.Hardware.Oxygen">
     <Major>2</Major>
     <Minor>0</Minor>
-    <Build>1</Build>
+    <Build>3</Build>
     <Revision>0</Revision>
-    <Suffix>-beta</Suffix>
+    <Suffix></Suffix>
   </Version>
 </Versions>

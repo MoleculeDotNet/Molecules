@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>IngenuityMicro.Hardware.Silicon</id>
+    <title>IngenuityMicro Molecule.Net Silicon Flash storage board</title>
+    <version>1.0.0</version>
+    <authors>Martin Calsyn</authors>
+    <owners>IngenuityMicro</owners>
+    <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
+    <projectUrl>https://github.com/MoleculeDotNet/Molecules</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>.Net Micro Framework support for the IngenuityMicro Silicon flash memory board</summary>
+    <description>
+      This library provides .Net Micro Framework support for the Molecule.Net 'Silicon' flash memory storage board.
+    </description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>Copyright 2015 IngenuityMicro</copyright>
+    <tags>NETMF MicroFramework IoT Molecule.Net Si Silicon</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.SPOT.Native" />
+      <frameworkAssembly assemblyName="Microsoft.SPOT.Hardware" />
+    </frameworkAssemblies>
+    <dependencies>
+      <dependency id="IngenuityMicro.Hardware.Oxygen" version="2.0.3" />
+    </dependencies>
+  </metadata>
+</package>

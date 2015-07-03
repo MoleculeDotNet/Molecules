@@ -39,8 +39,8 @@ namespace NeonTest
             sntp.SetTime();
 
             var uri = new Uri("http://www.example.com");
-            var httpClient = new HttpClient(wifi, uri.Host);
-            var request = new HttpRequest();
+            var httpClient = new HttpClient(wifi);
+            var request = new HttpRequest(uri);
             request.Uri = uri;
             request.Headers.Add("Connection","Keep-Alive");
             request.ResponseReceived += HttpResponseReceived;

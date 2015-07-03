@@ -510,7 +510,7 @@ namespace IngenuityMicro.Hardware.Silicon
 
           return bufferSize > 0 ? new BufferedStream(fs, bufferSize) : (Stream)fs;
         }
-        catch(Exception ex)
+        catch (Exception)
         {
           // Something failed so we need to clean-up and re-throw the exception
           if (fs != null) fs.Close();

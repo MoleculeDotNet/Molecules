@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace IngenuityMicro.Hardware.Silicon
 {
-    internal class MX25l3206
+    internal class FL164KIF01
     {
         private const byte CMD_GET_IDENTIFICATION = 0x9F;
         private const byte CMD_ERASE_SECTOR = 0x20;
@@ -34,7 +34,7 @@ namespace IngenuityMicro.Hardware.Silicon
 
         private const byte DUMMY_BYTE = 0x00;
 
-        public MX25l3206(SPI spi)
+        public FL164KIF01(SPI spi)
         {
             _spi = spi;
 

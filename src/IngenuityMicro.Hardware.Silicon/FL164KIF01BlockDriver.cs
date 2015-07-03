@@ -4,16 +4,16 @@ using Microsoft.SPOT.Hardware;
 
 namespace IngenuityMicro.Hardware.Silicon
 {
-    public class MX25l3206BlockDriver : IBlockDriver
+    public class FL164KIF01BlockDriver : IBlockDriver
     {
-        private MX25l3206 _flash;
+        private FL164KIF01 _flash;
         private ushort _clusterSize;
         private OutputPort _inUseIndicator;
 
-        public MX25l3206BlockDriver(SPI spi, OutputPort inUseLed, int pagesPerCluster)
+        public FL164KIF01BlockDriver(SPI spi, OutputPort inUseLed, int pagesPerCluster)
         {
-            _flash = new MX25l3206(spi);
-            _clusterSize = (ushort)(pagesPerCluster * MX25l3206.PageSize);
+            _flash = new FL164KIF01(spi);
+            _clusterSize = (ushort)(pagesPerCluster * FL164KIF01.PageSize);
             _inUseIndicator = inUseLed;
         }
 
@@ -73,12 +73,12 @@ namespace IngenuityMicro.Hardware.Silicon
 
         public int DeviceSize
         {
-            get { return MX25l3206.MaxAddress; }
+            get { return FL164KIF01.MaxAddress; }
         }
 
         public int SectorSize
         {
-            get { return MX25l3206.SectoreSize; }
+            get { return FL164KIF01.SectoreSize; }
         }
 
         public ushort ClusterSize

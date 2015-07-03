@@ -9,14 +9,22 @@ namespace IngenuityMicro.Hardware.Silicon
     public class SiliconStorageDevice
     {
         private TinyFileSystem _tfs;
+        private Cpu.Pin _chipSelect;
+        private SPI.SPI_module _spiModule;
+
+        public SiliconStorageDevice(Cpu.Pin chipSelect, SPI.SPI_module spiModule)
+        {
+            _chipSelect = chipSelect;
+            _spiModule = spiModule;
+        }
 
         public void Initialize()
         {
-            var spiConfig = new SPI.Configuration(Pin.PA4, false, 0, 0, false, true, 12000, SPI.SPI_module.SPI1);
+            var spiConfig = new SPI.Configuration(_chipSelect, false, 0, 0, false, true, 12000, _spiModule);
             var spi = new SPI(spiConfig);
 
             // Instantiate the block driver
-            var driver = new MX25l3206BlockDriver(spi, Oxygen.Hardware.UserLed, 4);
+            var driver = new FL164KIF01BlockDriver(spi, Oxygen.Hardware.UserLed, 4);
 
             // Instantiate the file system passing the block driver for the underlying storage medium
             _tfs = new TinyFileSystem(driver);

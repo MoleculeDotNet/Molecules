@@ -57,15 +57,15 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="PervasiveDigital.Net, Version=2.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IngenuityMicro.Hardware.Neon.2.0.3\lib\netmf43\PervasiveDigital.Net.dll</HintPath>
+      <HintPath>..\..\packages\PervasiveDigital.Net.Azure.MobileServices.2.0.3\lib\netmf43\PervasiveDigital.Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PervasiveDigital.Net.Azure, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\PervasiveDigital.Net.Azure.1.0.0\lib\netmf43\PervasiveDigital.Net.Azure.dll</HintPath>
+    <Reference Include="PervasiveDigital.Net.Azure, Version=2.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\PervasiveDigital.Net.Azure.MobileServices.2.0.3\lib\netmf43\PervasiveDigital.Net.Azure.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PervasiveDigital.Utility, Version=2.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IngenuityMicro.Hardware.Neon.2.0.3\lib\netmf43\PervasiveDigital.Utility.dll</HintPath>
+      <HintPath>..\..\packages\PervasiveDigital.Net.Azure.MobileServices.2.0.3\lib\netmf43\PervasiveDigital.Utility.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

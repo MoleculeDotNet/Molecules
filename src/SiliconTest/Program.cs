@@ -1,10 +1,13 @@
 using System;
-using Microsoft.SPOT;
-
-using IngenuityMicro.Hardware.Silicon;
 using System.IO;
 using System.Text;
 using System.Threading;
+
+using Microsoft.SPOT;
+using Microsoft.SPOT.Hardware;
+
+using IngenuityMicro.Hardware.Oxygen;
+using IngenuityMicro.Hardware.Silicon;
 
 namespace SiliconTest
 {
@@ -12,41 +15,78 @@ namespace SiliconTest
     {
         public static void Main()
         {
-            Debug.Print("Silicon Test Starting...");
-
-            var fileSystem = new SiliconStorageDevice();
-
-            Debug.Print("Initializing");
-
-            fileSystem.Initialize();
-            if (!fileSystem.IsFormatted)
+            bool success = false;
+            try
             {
-                Debug.Print("Formatting - go get lunch");
-                fileSystem.Format(); // takes quite awhile
-                Debug.Print("Formatting completed.");
-            }
-            fileSystem.Mount();
+                Debug.Print("Silicon Test Starting...");
 
-            var files = fileSystem.GetFiles();
-            foreach (var file in files)
+                var fileSystem = new SiliconStorageDevice(Pin.PB9, SPI.SPI_module.SPI2);
+
+                Debug.Print("Initializing");
+
+                fileSystem.Initialize();
+                if (!fileSystem.IsFormatted)
+                {
+                    Debug.Print("Formatting - go get lunch");
+                    fileSystem.Format(); // takes quite awhile
+                    Debug.Print("Formatting completed.");
+                }
+                fileSystem.Mount();
+
+                var files = fileSystem.GetFiles();
+                foreach (var file in files)
+                {
+                    Debug.Print("Deleting " + file);
+                    fileSystem.Delete(file);
+                }
+
+                using (var stream = fileSystem.Open("SiliconTest.txt", FileMode.OpenOrCreate))
+                {
+                    using (var sw = new StreamWriter(stream))
+                    {
+                        sw.WriteLine("This is a test");
+                    }
+                }
+
+                Debug.Print("Files:");
+                files = fileSystem.GetFiles();
+                foreach (var file in files)
+                {
+                    Debug.Print(file);
+                }
+
+                using (var stream = fileSystem.Open("SiliconTest.txt", FileMode.OpenOrCreate))
+                {
+                    using (var sw = new StreamReader(stream))
+                    {
+                        var contents = sw.ReadToEnd();
+                        Debug.Print("Contents of test file : " + contents);
+                    }
+                }
+
+                success = true;
+            }
+            catch
             {
-                fileSystem.Delete(file);
+                success = false;
             }
 
-            var stream = fileSystem.Open("SiliconTest.txt", FileMode.OpenOrCreate);
-            var buffer = Encoding.UTF8.GetBytes("This is a test");
-            stream.Write(buffer, 0, buffer.Length);
-            stream.Flush();
-            stream.Close();
+            int interval = 1;
+            if (success)
+                interval = 5;
 
-            Debug.Print("Files:");
-            files = fileSystem.GetFiles();
-            foreach (var file in files)
+            bool ledState = true;
+            int iCounter = 0;
+            while (true)
             {
-                Debug.Print(file);
+                Hardware.UserLed.Write(ledState);
+                if (++iCounter == interval)
+                {
+                    ledState = !ledState;
+                    iCounter = 0;
+                }
+                Thread.Sleep(100);
             }
-
-            Thread.Sleep(Timeout.Infinite);
         }
     }
 }

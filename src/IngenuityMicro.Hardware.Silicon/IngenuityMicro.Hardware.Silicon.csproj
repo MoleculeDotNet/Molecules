@@ -29,8 +29,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="MX25l3206.cs" />
-    <Compile Include="MX25l3206BlockDriver.cs" />
+    <Compile Include="FL164KIF01.cs" />
+    <Compile Include="FL164KIF01BlockDriver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SiliconStorageDevice.cs" />
     <Compile Include="TinyFileSystem\BufferedStream.cs" />
